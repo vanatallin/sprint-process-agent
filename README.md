@@ -125,4 +125,4 @@ For backend (AWS SSM Parameters):
 
 ## License
 
-Internal use only.
+Internal Red Hat project

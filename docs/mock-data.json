@@ -1,0 +1,166 @@
+{
+  "success": true,
+  "sprintAnalysis": {
+    "sprintHealth": "at-risk",
+    "completionPrediction": {
+      "likelihood": "medium",
+      "reasoning": "Based on current velocity and remaining work, the sprint has a moderate chance of completion. 3 tickets are blocked and need immediate attention. The team has completed 38% of points with 5 days remaining.",
+      "confidence": "medium"
+    },
+    "staleTickets": [
+      {
+        "ticketKey": "SPRINT-123",
+        "daysSinceUpdate": 5,
+        "reason": "Blocked waiting for API design approval from architecture team. Last comment mentions waiting for review since Monday.",
+        "recommendation": "Schedule urgent sync with architecture team to unblock. Consider escalating if no response by EOD.",
+        "assignee": "John Doe"
+      },
+      {
+        "ticketKey": "SPRINT-456",
+        "daysSinceUpdate": 3,
+        "reason": "Developer is on PTO until Thursday, no handoff was done before leaving.",
+        "recommendation": "Either reassign to available team member with context transfer, or wait for return if not critical path.",
+        "assignee": "Jane Smith"
+      },
+      {
+        "ticketKey": "SPRINT-789",
+        "daysSinceUpdate": 4,
+        "reason": "Waiting for test environment to be set up. DevOps ticket INFRA-100 is blocking.",
+        "recommendation": "Follow up on INFRA-100 status. Consider using local docker environment as workaround.",
+        "assignee": "Bob Williams"
+      }
+    ],
+    "workloadAnalysis": {
+      "overloaded": [
+        {
+          "person": "Alice Johnson",
+          "currentPoints": 21,
+          "reasoning": "Has 21 story points assigned which significantly exceeds the typical capacity of 13 points per sprint. Currently working on 4 tickets including 2 high-complexity items."
+        }
+      ],
+      "underutilized": [
+        {
+          "person": "Charlie Brown",
+          "currentPoints": 3,
+          "reasoning": "Only 3 story points assigned with 1 small ticket. Has demonstrated capacity for 10+ points in previous sprints. Could take on work from Alice."
+        }
+      ]
+    },
+    "insights": "The sprint is at risk due to 3 blocked tickets affecting critical path and uneven workload distribution. Consider: (1) Immediate action on blocked tickets - architecture review and environment setup; (2) Redistribute 8 points from Alice to Charlie; (3) Daily sync on blocker status for remainder of sprint."
+  },
+  "qualityResults": [
+    {
+      "ticketKey": "SPRINT-101",
+      "quality": "low",
+      "qualityScore": 35,
+      "issues": [
+        {
+          "type": "missing-ac",
+          "severity": "high",
+          "description": "Acceptance criteria are vague - 'should work correctly' is not testable",
+          "suggestion": "Add specific, measurable criteria: 'API returns 200 with valid JSON when given valid input'"
+        },
+        {
+          "type": "unclear-description",
+          "severity": "medium",
+          "description": "Description lacks technical context for implementation",
+          "suggestion": "Add technical approach section referencing tech design doc section 3.2"
+        }
+      ],
+      "scopeCreep": [],
+      "missingRequirements": [
+        {
+          "item": "Error handling for rate limit responses (429)",
+          "sourceDoc": "tech-design",
+          "recommendation": "Add acceptance criteria for retry logic as specified in tech design section 4.1"
+        },
+        {
+          "item": "Logging for debugging",
+          "sourceDoc": "refinement",
+          "recommendation": "Add requirement for structured logging per refinement doc logging standards"
+        }
+      ],
+      "overallAssessment": "This ticket needs significant improvement before development can begin effectively. Missing critical acceptance criteria and requirements from planning docs."
+    },
+    {
+      "ticketKey": "SPRINT-102",
+      "quality": "medium",
+      "qualityScore": 65,
+      "issues": [
+        {
+          "type": "missing-details",
+          "severity": "low",
+          "description": "Edge cases not fully specified",
+          "suggestion": "Add handling for empty input and null values"
+        }
+      ],
+      "scopeCreep": [
+        {
+          "item": "Caching layer mentioned in ticket but not in any planning docs",
+          "location": "description",
+          "recommendation": "Either remove caching from scope or update tech design to include caching requirements"
+        }
+      ],
+      "missingRequirements": [],
+      "overallAssessment": "Ticket is mostly complete but has scope creep concern. Caching should be discussed with team before implementation."
+    },
+    {
+      "ticketKey": "SPRINT-103",
+      "quality": "high",
+      "qualityScore": 92,
+      "issues": [],
+      "scopeCreep": [],
+      "missingRequirements": [],
+      "overallAssessment": "Well-defined ticket with clear acceptance criteria that align with planning documents. Ready for development."
+    }
+  ],
+  "actionItems": [
+    {
+      "type": "process",
+      "priority": "high",
+      "action": "Implement daily 15-minute blocker check-in at 10am",
+      "expectedImpact": "Reduce average blocker resolution time from 3 days to 1 day",
+      "responsible": "Scrum Master",
+      "timeline": "Start next sprint"
+    },
+    {
+      "type": "capacity",
+      "priority": "high",
+      "action": "Redistribute 8 story points from Alice to Charlie immediately",
+      "expectedImpact": "Balance workload and increase sprint completion likelihood by 20%",
+      "responsible": "Tech Lead",
+      "timeline": "Today"
+    },
+    {
+      "type": "quality",
+      "priority": "medium",
+      "action": "Add ticket quality checklist to Definition of Ready",
+      "expectedImpact": "Reduce tickets with quality issues from 30% to under 10%",
+      "responsible": "Product Owner",
+      "timeline": "Before next sprint planning"
+    },
+    {
+      "type": "technical",
+      "priority": "medium",
+      "action": "Set up shared test environment with Docker compose",
+      "expectedImpact": "Eliminate environment-related blockers",
+      "responsible": "DevOps",
+      "timeline": "Next 2 sprints"
+    }
+  ],
+  "sprintData": {
+    "sprint": {
+      "id": 42,
+      "name": "Sprint 42 - User Authentication",
+      "startDate": "2024-01-15T00:00:00Z",
+      "endDate": "2024-01-29T00:00:00Z",
+      "daysRemaining": 5
+    },
+    "metrics": {
+      "totalPoints": 55,
+      "completedPoints": 21,
+      "completionPct": 38.2
+    },
+    "ticketCount": 15
+  }
+}

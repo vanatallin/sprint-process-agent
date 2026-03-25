@@ -12,7 +12,7 @@
 
 const { analyzeSprintHealth, checkTicketQuality, generateActionItems } = require('./analyzers/claudeAnalyzer');
 
-exports.handler = async (event) => {
+exports.handler = async (_event) => {
   console.log('Starting sprint analysis...');
 
   try {

@@ -111,4 +111,4 @@
  * @property {{ sprint: Sprint, metrics: SprintMetrics, ticketCount: number }} sprintData
  */
 
-export {}
+export {};

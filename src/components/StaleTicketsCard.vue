@@ -40,7 +40,7 @@
 defineProps({
   staleTickets: {
     type: Array,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 </script>

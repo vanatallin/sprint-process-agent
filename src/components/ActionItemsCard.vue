@@ -16,16 +16,10 @@
             <span class="text-sm text-gray-500 capitalize">{{ item.type }}</span>
           </div>
           <div class="flex gap-2">
-            <button
-              @click="markDone(idx)"
-              class="text-sm text-green-600 hover:text-green-800"
-            >
+            <button class="text-sm text-green-600 hover:text-green-800" @click="markDone(idx)">
               Mark Done
             </button>
-            <button
-              @click="dismiss(idx)"
-              class="text-sm text-gray-500 hover:text-gray-700"
-            >
+            <button class="text-sm text-gray-500 hover:text-gray-700" @click="dismiss(idx)">
               Dismiss
             </button>
           </div>
@@ -52,9 +46,7 @@
 
     <!-- Export Button -->
     <div class="mt-6 flex justify-end">
-      <button @click="exportActions" class="btn-secondary">
-        Export to Markdown
-      </button>
+      <button class="btn-secondary" @click="exportActions">Export to Markdown</button>
     </div>
   </div>
 </template>
@@ -63,46 +55,53 @@
 const props = defineProps({
   actionItems: {
     type: Array,
-    required: true
-  }
-})
+    required: true,
+    default: () => [],
+  },
+});
 
-const emit = defineEmits(['update:actionItems'])
+const emit = defineEmits(['update:actionItems']);
 
 function priorityClass(priority) {
-  if (priority === 'high') return 'status-critical'
-  if (priority === 'medium') return 'status-at-risk'
-  return 'status-healthy'
+  if (priority === 'high') {
+    return 'status-critical';
+  }
+  if (priority === 'medium') {
+    return 'status-at-risk';
+  }
+  return 'status-healthy';
 }
 
 function markDone(idx) {
-  // TODO: Implement mark as done
-  console.log('Mark done:', idx)
+  const updated = props.actionItems.filter((_, i) => i !== idx);
+  emit('update:actionItems', updated);
 }
 
 function dismiss(idx) {
-  // TODO: Implement dismiss
-  console.log('Dismiss:', idx)
+  const updated = props.actionItems.filter((_, i) => i !== idx);
+  emit('update:actionItems', updated);
 }
 
 function exportActions() {
-  const markdown = props.actionItems.map(item => {
-    return `## ${item.action}
+  const markdown = props.actionItems
+    .map((item) => {
+      return `## ${item.action}
 
 - **Priority:** ${item.priority}
 - **Type:** ${item.type}
 - **Expected Impact:** ${item.expectedImpact}
 - **Responsible:** ${item.responsible}
 - **Timeline:** ${item.timeline}
-`
-  }).join('\n---\n\n')
+`;
+    })
+    .join('\n---\n\n');
 
-  const blob = new Blob([markdown], { type: 'text/markdown' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'sprint-action-items.md'
-  a.click()
-  URL.revokeObjectURL(url)
+  const blob = new Blob([markdown], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sprint-action-items.md';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 </script>

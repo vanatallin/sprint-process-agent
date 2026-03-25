@@ -17,7 +17,9 @@ let anthropic = null;
  * Get or create Claude client
  */
 async function getClaudeClient() {
-  if (anthropic) return anthropic;
+  if (anthropic) {
+    return anthropic;
+  }
 
   const apiKey = await getParameter('/sprint-poc/dev/claude-api-key');
   anthropic = new Anthropic({ apiKey });
@@ -156,7 +158,7 @@ Check quality and cross-reference with documents.`;
 /**
  * Build prompt for action items
  */
-function buildActionItemsPrompt(sprintAnalysis, qualityResults, sprintData) {
+function buildActionItemsPrompt(sprintAnalysis, qualityResults, _sprintData) {
   const lowQualityTickets = qualityResults.filter(r => r.quality === 'low' || r.quality === 'medium');
 
   return `Based on the sprint analysis, generate action items for the next sprint:

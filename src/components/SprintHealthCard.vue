@@ -19,7 +19,9 @@
       </div>
       <div class="text-center p-4 bg-gray-50 rounded-lg">
         <div class="text-sm text-gray-600">Completion</div>
-        <div class="text-lg font-semibold">{{ sprintData.metrics?.completionPct?.toFixed(1) }}%</div>
+        <div class="text-lg font-semibold">
+          {{ sprintData.metrics?.completionPct?.toFixed(1) }}%
+        </div>
       </div>
     </div>
 
@@ -27,7 +29,10 @@
     <div class="mb-6">
       <div class="flex justify-between text-sm text-gray-600 mb-1">
         <span>Progress</span>
-        <span>{{ sprintData.metrics?.completedPoints }} / {{ sprintData.metrics?.totalPoints }} points</span>
+        <span
+          >{{ sprintData.metrics?.completedPoints }} /
+          {{ sprintData.metrics?.totalPoints }} points</span
+        >
       </div>
       <div class="w-full bg-gray-200 rounded-full h-3">
         <div
@@ -43,8 +48,12 @@
       <h3 class="font-semibold mb-2">Completion Prediction</h3>
       <p class="text-gray-700">{{ sprintAnalysis.completionPrediction?.reasoning }}</p>
       <div class="mt-2 flex gap-4 text-sm text-gray-600">
-        <span>Likelihood: <strong>{{ sprintAnalysis.completionPrediction?.likelihood }}</strong></span>
-        <span>Confidence: <strong>{{ sprintAnalysis.completionPrediction?.confidence }}</strong></span>
+        <span
+          >Likelihood: <strong>{{ sprintAnalysis.completionPrediction?.likelihood }}</strong></span
+        >
+        <span
+          >Confidence: <strong>{{ sprintAnalysis.completionPrediction?.confidence }}</strong></span
+        >
       </div>
     </div>
 
@@ -57,30 +66,38 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps({
   sprintAnalysis: {
     type: Object,
-    required: true
+    required: true,
   },
   sprintData: {
     type: Object,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
 const statusClass = computed(() => {
-  const health = props.sprintAnalysis.sprintHealth
-  if (health === 'healthy') return 'status-healthy'
-  if (health === 'at-risk') return 'status-at-risk'
-  return 'status-critical'
-})
+  const health = props.sprintAnalysis.sprintHealth;
+  if (health === 'healthy') {
+    return 'status-healthy';
+  }
+  if (health === 'at-risk') {
+    return 'status-at-risk';
+  }
+  return 'status-critical';
+});
 
 const progressBarClass = computed(() => {
-  const pct = props.sprintData.metrics?.completionPct || 0
-  if (pct >= 70) return 'bg-green-500'
-  if (pct >= 40) return 'bg-yellow-500'
-  return 'bg-red-500'
-})
+  const pct = props.sprintData.metrics?.completionPct || 0;
+  if (pct >= 70) {
+    return 'bg-green-500';
+  }
+  if (pct >= 40) {
+    return 'bg-yellow-500';
+  }
+  return 'bg-red-500';
+});
 </script>

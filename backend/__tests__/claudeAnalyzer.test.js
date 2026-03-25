@@ -5,11 +5,7 @@
  * Story 4 & 5 - Unit tests for analyzer logic
  */
 
-const {
-  analyzeSprintHealth,
-  checkTicketQuality,
-  generateActionItems
-} = require('../src/analyzers/claudeAnalyzer');
+require('../src/analyzers/claudeAnalyzer');
 
 // Mock the SSM client
 jest.mock('../src/utils/ssm', () => ({
@@ -27,33 +23,6 @@ jest.mock('@anthropic-ai/sdk', () => {
 
 describe('claudeAnalyzer', () => {
   describe('analyzeSprintHealth', () => {
-    const mockSprintData = {
-      sprint: {
-        name: 'Sprint 42',
-        daysRemaining: 5
-      },
-      metrics: {
-        totalPoints: 55,
-        completedPoints: 21,
-        completionPct: 38.2
-      },
-      workload: [
-        { name: 'Alice', points: 21, tickets: ['T-1', 'T-2', 'T-3'] },
-        { name: 'Bob', points: 3, tickets: ['T-4'] }
-      ],
-      tickets: [
-        {
-          key: 'T-1',
-          summary: 'Test ticket',
-          status: 'In Progress',
-          storyPoints: 8,
-          assignee: 'Alice',
-          daysSinceUpdate: 5,
-          comments: [{ author: 'Alice', body: 'Blocked on API' }]
-        }
-      ]
-    };
-
     it('should return valid sprint analysis structure', async () => {
       // TODO: Implement test with mocked Claude response
       expect(true).toBe(true);
@@ -71,13 +40,6 @@ describe('claudeAnalyzer', () => {
   });
 
   describe('checkTicketQuality', () => {
-    const mockTicket = {
-      key: 'T-1',
-      summary: 'Implement login',
-      description: 'As a user I want to login',
-      labels: ['feature']
-    };
-
     it('should return valid quality check structure', async () => {
       // TODO: Implement test
       expect(true).toBe(true);

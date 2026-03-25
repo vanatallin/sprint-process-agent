@@ -95,7 +95,7 @@ jobs:
         run: npm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
@@ -141,7 +141,7 @@ jobs:
             assess /repo --output-dir /reports --verbose
 
       - name: Upload AgentReady Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: agentready-report
           path: reports/

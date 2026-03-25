@@ -1,0 +1,383 @@
+openapi: 3.1.0
+info:
+  title: Sprint Agent API
+  version: 0.1.0
+  description: |
+    AI-powered sprint monitoring and ticket quality checking API.
+    Analyzes Jira sprints using Claude AI to identify issues before they derail your sprint.
+  contact:
+    name: Sprint Agent Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://{apiGatewayId}.execute-api.{region}.amazonaws.com/prod
+    description: Production server
+    variables:
+      apiGatewayId:
+        default: api-id
+        description: AWS API Gateway ID
+      region:
+        default: us-east-1
+        description: AWS Region
+
+paths:
+  /analyze-sprint:
+    post:
+      summary: Analyze sprint health and ticket quality
+      description: |
+        Triggers a full sprint analysis including health check, ticket quality,
+        and action items generation. Uses configured sprint/board from SSM.
+      operationId: analyzeSprint
+      tags:
+        - Analysis
+      responses:
+        '200':
+          description: Sprint analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+              example:
+                success: true
+                sprintAnalysis:
+                  sprintHealth: at-risk
+                  completionPrediction:
+                    likelihood: medium
+                    reasoning: "3 tickets are blocked and 2 are stale"
+                    confidence: high
+                  staleTickets:
+                    - ticketKey: SPRINT-123
+                      daysSinceUpdate: 5
+                      reason: "No updates since assigned"
+                      recommendation: "Check with assignee for blockers"
+                      assignee: "John Doe"
+                  insights: "Sprint has moderate risk due to stale tickets"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized (API key issues)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Timeout (analysis took too long)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    options:
+      summary: CORS preflight
+      responses:
+        '200':
+          description: CORS headers
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: '*'
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+                example: 'POST, OPTIONS'
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+                example: '*'
+
+components:
+  schemas:
+    AnalysisResponse:
+      type: object
+      required:
+        - success
+        - sprintAnalysis
+        - qualityResults
+        - actionItems
+        - sprintData
+      properties:
+        success:
+          type: boolean
+          description: Whether the analysis completed successfully
+        sprintAnalysis:
+          $ref: '#/components/schemas/SprintAnalysis'
+        qualityResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityResult'
+        actionItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionItem'
+        sprintData:
+          $ref: '#/components/schemas/SprintData'
+
+    SprintAnalysis:
+      type: object
+      required:
+        - sprintHealth
+        - completionPrediction
+        - staleTickets
+        - workloadAnalysis
+        - insights
+      properties:
+        sprintHealth:
+          type: string
+          enum: [healthy, at-risk, critical]
+          description: Overall sprint health status
+        completionPrediction:
+          $ref: '#/components/schemas/CompletionPrediction'
+        staleTickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaleTicket'
+        workloadAnalysis:
+          $ref: '#/components/schemas/WorkloadAnalysis'
+        insights:
+          type: string
+          description: Overall sprint health insights
+
+    CompletionPrediction:
+      type: object
+      required:
+        - likelihood
+        - reasoning
+        - confidence
+      properties:
+        likelihood:
+          type: string
+          enum: [high, medium, low]
+        reasoning:
+          type: string
+          description: Explanation for the prediction
+        confidence:
+          type: string
+          enum: [high, medium, low]
+
+    StaleTicket:
+      type: object
+      required:
+        - ticketKey
+        - daysSinceUpdate
+        - reason
+        - recommendation
+        - assignee
+      properties:
+        ticketKey:
+          type: string
+          example: SPRINT-123
+        daysSinceUpdate:
+          type: integer
+          example: 5
+        reason:
+          type: string
+          description: Why the ticket is considered stale
+        recommendation:
+          type: string
+          description: Suggested action
+        assignee:
+          type: string
+
+    WorkloadAnalysis:
+      type: object
+      required:
+        - overloaded
+        - underutilized
+      properties:
+        overloaded:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkloadPerson'
+        underutilized:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkloadPerson'
+
+    WorkloadPerson:
+      type: object
+      required:
+        - person
+        - currentPoints
+        - reasoning
+      properties:
+        person:
+          type: string
+        currentPoints:
+          type: integer
+        reasoning:
+          type: string
+
+    QualityResult:
+      type: object
+      required:
+        - ticketKey
+        - quality
+        - qualityScore
+        - issues
+        - overallAssessment
+      properties:
+        ticketKey:
+          type: string
+          example: SPRINT-456
+        quality:
+          type: string
+          enum: [high, medium, low]
+        qualityScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityIssue'
+        scopeCreep:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeCreepItem'
+        missingRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/MissingRequirement'
+        overallAssessment:
+          type: string
+
+    QualityIssue:
+      type: object
+      required:
+        - type
+        - severity
+        - description
+        - suggestion
+      properties:
+        type:
+          type: string
+          enum: [missing-ac, unclear-description, scope-creep, missing-requirement, missing-details]
+        severity:
+          type: string
+          enum: [high, medium, low]
+        description:
+          type: string
+        suggestion:
+          type: string
+
+    ScopeCreepItem:
+      type: object
+      required:
+        - item
+        - location
+        - recommendation
+      properties:
+        item:
+          type: string
+        location:
+          type: string
+          enum: [description, ac]
+        recommendation:
+          type: string
+
+    MissingRequirement:
+      type: object
+      required:
+        - item
+        - sourceDoc
+        - recommendation
+      properties:
+        item:
+          type: string
+        sourceDoc:
+          type: string
+          enum: [refinement, tech-design]
+        recommendation:
+          type: string
+
+    ActionItem:
+      type: object
+      required:
+        - type
+        - priority
+        - action
+        - expectedImpact
+      properties:
+        type:
+          type: string
+          enum: [process, capacity, quality, technical]
+        priority:
+          type: string
+          enum: [high, medium, low]
+        action:
+          type: string
+        expectedImpact:
+          type: string
+        responsible:
+          type: string
+        timeline:
+          type: string
+
+    SprintData:
+      type: object
+      required:
+        - sprint
+        - metrics
+        - ticketCount
+      properties:
+        sprint:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            startDate:
+              type: string
+              format: date-time
+            endDate:
+              type: string
+              format: date-time
+            daysRemaining:
+              type: integer
+        metrics:
+          type: object
+          properties:
+            totalPoints:
+              type: integer
+            completedPoints:
+              type: integer
+            completionPct:
+              type: number
+        ticketCount:
+          type: integer
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+        stack:
+          type: string
+          description: Stack trace (development only)
+
+tags:
+  - name: Analysis
+    description: Sprint analysis operations

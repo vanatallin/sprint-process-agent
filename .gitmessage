@@ -1,0 +1,22 @@
+# <type>(<scope>): <subject>
+#
+# Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+#
+# Example:
+#   feat(analyzer): add sprint prep readiness check
+#
+# The subject should:
+#   - Use imperative mood ("add" not "added" or "adds")
+#   - Not end with a period
+#   - Be 50 chars or less
+#
+# Body (optional):
+#   - Explain WHAT and WHY, not HOW
+#   - Wrap at 72 characters
+#   - Separate from subject with blank line
+#
+# Footer (optional):
+#   - Reference issues: "Closes #123" or "Fixes #456"
+#   - Breaking changes: "BREAKING CHANGE: description"
+
+

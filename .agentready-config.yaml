@@ -1,0 +1,67 @@
+# AgentReady Configuration
+# https://github.com/ambient-code/agentready
+
+# Project metadata
+project:
+  name: sprint-agent
+  description: AI-powered sprint analysis tool using Claude
+  language: javascript
+  framework: vue
+
+# Exclude certain assessors that don't apply to this project
+exclude:
+  # We use JavaScript with JSDoc, not TypeScript
+  # - type_annotations  # Keep enabled - we use JSDoc types
+
+  # Python-specific assessors
+  - python_packaging
+  - requirements_txt
+
+# Custom weight adjustments (optional)
+# weights:
+#   claude_md: 1.2  # Increase importance of CLAUDE.md
+#   readme: 1.0
+#   test_coverage: 0.8
+
+# Paths to scan
+include_paths:
+  - src/
+  - backend/
+  - docs/
+
+# Paths to exclude from scanning
+exclude_paths:
+  - node_modules/
+  - dist/
+  - coverage/
+  - "*.min.js"
+
+# Test configuration
+testing:
+  framework: vitest,jest
+  coverage_threshold: 70
+  test_file_patterns:
+    - "**/*.test.js"
+    - "**/*.spec.js"
+    - "**/__tests__/**/*.js"
+
+# Documentation requirements
+documentation:
+  require_readme: true
+  require_claude_md: true
+  require_api_docs: true
+  api_docs_path: docs/api-contract.md
+
+# Code quality thresholds
+code_quality:
+  max_cyclomatic_complexity: 15
+  max_file_lines: 500
+  max_function_lines: 50
+
+# Git configuration
+git:
+  conventional_commits: true
+  require_gitignore: true
+  protected_branches:
+    - main
+    - master

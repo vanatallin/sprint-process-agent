@@ -132,6 +132,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create reports directory
+        run: mkdir -p reports && chmod 777 reports
+
       - name: Run AgentReady Assessment
         run: |
           docker run --rm \

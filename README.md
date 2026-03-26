@@ -27,7 +27,7 @@ Sprint Agent automates analysis using Claude AI:
 
 ## Quick Start
 
-**Prerequisites:** Node.js 18+, npm 9+
+**Prerequisites:** Node.js 18+, npm 9+, Docker (for local storage)
 
 ### 1. Install Dependencies
 
@@ -53,7 +53,19 @@ cp .env.example .env
 # Or use your deployed API Gateway URL
 ```
 
-### 3. Run the Application
+### 3. Start Local Storage (MinIO)
+
+Analysis results are stored in S3 (production) or MinIO (local development):
+
+```bash
+# Start MinIO container
+docker-compose up -d
+
+# MinIO Console: http://localhost:9001 (minioadmin/minioadmin)
+# S3 API: http://localhost:9000
+```
+
+### 4. Run the Application
 
 **Frontend only (uses mock data):**
 ```bash
@@ -70,10 +82,13 @@ npm run dev
 
 **Run both together:**
 ```bash
-# Terminal 1 - Backend
+# Terminal 1 - Start MinIO
+docker-compose up -d
+
+# Terminal 2 - Backend
 cd backend && npm run dev
 
-# Terminal 2 - Frontend
+# Terminal 3 - Frontend
 npm run dev
 ```
 
@@ -157,7 +172,8 @@ sprint-agent/
 │   ├── integrations/             # External service integrations
 │   │   ├── jira/                 # Story 2 - Jira MCP
 │   │   ├── googleDocs/           # Story 9/10 - Google Docs MCP
-│   │   └── slack/                # Story 11 - Slack alerts
+│   │   ├── slack/                # Story 11 - Slack alerts
+│   │   └── storage/              # S3/MinIO for analysis results
 │   └── utils/                    # Shared utilities
 │       ├── claudeClient.js       # Claude API client
 │       └── ssm.js                # AWS SSM parameters
@@ -176,7 +192,28 @@ sprint-agent/
 Vue Dashboard → API Gateway → Lambda → Claude API
                                 ↓
                     Jira MCP ← → Google Docs MCP
+                                ↓
+                          S3 / MinIO
+                    (Analysis Results Storage)
 ```
+
+## Data Storage
+
+Analysis results are stored in S3 (or MinIO for local development):
+
+```
+sprint-agent-data/
+├── daily/
+│   └── {YYYY-MM-DD}/
+│       └── {timestamp}-analysis.json
+└── weekly/
+    └── {YYYY-WW}/
+        └── {timestamp}-report.json
+```
+
+- **Daily analyses** are saved automatically after each run
+- **Weekly reports** aggregate the week's data (Story 10)
+- Access via API: `GET /analyses` to list, `GET /analyses/{date}/{filename}` to retrieve
 
 ## License
 

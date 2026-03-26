@@ -7,9 +7,11 @@
 const jira = require('./jira');
 const googleDocs = require('./googleDocs');
 const slack = require('./slack');
+const storage = require('./storage');
 
 module.exports = {
   jira,
   googleDocs,
-  slack
+  slack,
+  storage
 };

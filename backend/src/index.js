@@ -22,7 +22,7 @@ const {
 } = require('./analyzers');
 
 // Integrations
-const { jira, googleDocs } = require('./integrations');
+const { jira, googleDocs, storage } = require('./integrations');
 
 /**
  * Main Lambda handler
@@ -59,12 +59,9 @@ exports.handler = async (_event) => {
     console.log('Generating action items...');
     const actionItems = await generateActionItems(sprintAnalysis, qualityResults);
 
-    // 6. TODO: Post to Slack (Story 11)
-    // await slack.postSprintHealthReport(sprintAnalysis, channel);
-
-    // 7. Return results
-    console.log('Analysis complete');
-    return buildSuccessResponse({
+    // 6. Save results to S3/MinIO
+    console.log('Saving analysis results to storage...');
+    const analysisResults = {
       sprintAnalysis,
       qualityResults,
       actionItems,
@@ -73,6 +70,25 @@ exports.handler = async (_event) => {
         metrics: sprintData.metrics,
         ticketCount: sprintData.tickets.length
       }
+    };
+
+    let storageResult = null;
+    try {
+      storageResult = await storage.saveDailyAnalysis(analysisResults);
+      console.log(`Analysis saved to: ${storageResult.location}`);
+    } catch (storageError) {
+      // Log but don't fail - storage is not critical for the response
+      console.error('Failed to save to storage:', storageError.message);
+    }
+
+    // 7. TODO: Post to Slack (Story 11)
+    // await slack.postSprintHealthReport(sprintAnalysis, channel);
+
+    // 8. Return results
+    console.log('Analysis complete');
+    return buildSuccessResponse({
+      ...analysisResults,
+      storage: storageResult
     });
   } catch (error) {
     console.error('Error:', error);

@@ -10,6 +10,7 @@
 const express = require('express');
 const cors = require('cors');
 const { handler } = require('./index');
+const { storage } = require('./integrations');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,8 +20,13 @@ app.use(cors());
 app.use(express.json());
 
 // Health check
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/health', async (_req, res) => {
+  const storageHealth = await storage.healthCheck();
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    storage: storageHealth
+  });
 });
 
 // Main analysis endpoint - wraps Lambda handler
@@ -47,6 +53,30 @@ app.post('/analyze-sprint', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// List recent analyses from storage
+app.get('/analyses', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const analyses = await storage.listRecentAnalyses(days);
+    res.json({ success: true, analyses });
+  } catch (error) {
+    console.error('Error listing analyses:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get specific analysis by key
+app.get('/analyses/:date/:filename', async (req, res) => {
+  try {
+    const key = `daily/${req.params.date}/${req.params.filename}`;
+    const analysis = await storage.getAnalysis(key);
+    res.json({ success: true, analysis });
+  } catch (error) {
+    console.error('Error getting analysis:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -124,9 +154,13 @@ app.listen(PORT, () => {
 ║  Server running at: http://localhost:${PORT}                  ║
 ║                                                            ║
 ║  Endpoints:                                                ║
-║    GET  /health         - Health check                     ║
-║    POST /analyze-sprint - Run full analysis                ║
-║    GET  /mock-analysis  - Get mock data for UI dev         ║
+║    GET  /health           - Health check (incl. storage)   ║
+║    POST /analyze-sprint   - Run full analysis              ║
+║    GET  /mock-analysis    - Get mock data for UI dev       ║
+║    GET  /analyses         - List recent analyses           ║
+║    GET  /analyses/:date/  - Get specific analysis          ║
+║                                                            ║
+║  Storage: ${process.env.S3_ENDPOINT || 'AWS S3 (configure S3_ENDPOINT for MinIO)'}
 ╚════════════════════════════════════════════════════════════╝
   `);
 });

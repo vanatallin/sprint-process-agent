@@ -96,12 +96,38 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
 
 ```
 sprint-agent/
-├── src/                    # Vue 3 Frontend (views, components, services)
-├── backend/src/            # Lambda (analyzers, prompts, utils)
-├── tests/                  # Root-level tests
-├── docs/                   # API contract, mock data, ADRs
-└── .github/workflows/      # CI/CD
+├── src/                          # Vue 3 Frontend
+│   ├── components/               # UI components (cards, charts)
+│   ├── views/                    # Page views (DashboardView)
+│   ├── composables/              # Vue composition functions
+│   ├── services/                 # API client
+│   └── types/                    # TypeScript-style JSDoc types
+├── backend/src/                  # Lambda Backend
+│   ├── analyzers/                # Claude analysis modules
+│   │   ├── sprintHealthAnalyzer.js   # Story 4
+│   │   ├── ticketQualityAnalyzer.js  # Story 5
+│   │   ├── sprintPrepAnalyzer.js     # Story 6
+│   │   └── actionItemsAnalyzer.js    # Story 7
+│   ├── prompts/                  # System prompts for Claude
+│   │   ├── sprintHealth.js
+│   │   ├── ticketQuality.js
+│   │   ├── sprintPrep.js
+│   │   └── actionItems.js
+│   ├── integrations/             # External service integrations
+│   │   ├── jira/                 # Story 2 - Jira MCP
+│   │   ├── googleDocs/           # Story 9/10 - Google Docs MCP
+│   │   └── slack/                # Story 11 - Slack alerts
+│   └── utils/                    # Shared utilities
+│       ├── claudeClient.js       # Claude API client
+│       └── ssm.js                # AWS SSM parameters
+├── tests/                        # Frontend tests
+├── docs/                         # API contract, mock data, ADRs
+└── .github/
+    ├── workflows/ci.yml          # CI/CD pipeline
+    └── CODEOWNERS                # File ownership for PRs
 ```
+
+**Parallel Development:** Each story has isolated files to minimize merge conflicts. See `.github/CODEOWNERS` for file ownership.
 
 ## Architecture
 

@@ -1,7 +1,33 @@
-.idea
-node_modules
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.*.local
+
+# Coverage & test output
+coverage/
+*.lcov
+
+# IDE
+.idea/
 .vscode/
 *.swp
-.DS_Store
-*.log
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+*.local
+.cache/

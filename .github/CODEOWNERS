@@ -1,0 +1,89 @@
+# CODEOWNERS - Define code ownership for parallel development
+# Each story has clear ownership to minimize merge conflicts
+#
+# Format: <pattern> <owner1> <owner2> ...
+# Use GitHub usernames (e.g., @username) or team names (e.g., @org/team)
+
+# =============================================================================
+# GLOBAL OWNERS (for files that affect everyone)
+# =============================================================================
+
+# Root config files - require review from tech lead
+/*.json                         @tech-lead
+/*.js                           @tech-lead
+/*.yaml                         @tech-lead
+/.github/                       @tech-lead
+
+# Documentation - anyone can contribute
+/docs/                          @tech-lead
+*.md                            @tech-lead
+
+# =============================================================================
+# FRONTEND (Story 1 - Dashboard UI)
+# =============================================================================
+
+/src/                           @story-1-owner
+/src/components/                @story-1-owner
+/src/views/                     @story-1-owner
+/src/composables/               @story-1-owner
+/src/services/                  @story-1-owner
+/src/types/                     @story-1-owner
+/tests/                         @story-1-owner
+
+# =============================================================================
+# BACKEND - INTEGRATIONS
+# =============================================================================
+
+# Story 2 - Jira Integration
+/backend/src/integrations/jira/ @story-2-owner
+
+# Story 9 - Google Docs Integration (read)
+# Story 10 - Google Docs Status Reports (write)
+/backend/src/integrations/googleDocs/ @story-9-owner @story-10-owner
+
+# Story 11 - Slack Integration
+/backend/src/integrations/slack/ @story-11-owner
+
+# =============================================================================
+# BACKEND - PROMPTS (Story 3 primary, others can iterate)
+# =============================================================================
+
+/backend/src/prompts/sprintHealth.js    @story-3-owner @story-4-owner
+/backend/src/prompts/ticketQuality.js   @story-3-owner @story-5-owner
+/backend/src/prompts/sprintPrep.js      @story-3-owner @story-6-owner
+/backend/src/prompts/actionItems.js     @story-3-owner @story-7-owner
+/backend/src/prompts/index.js           @story-3-owner
+
+# =============================================================================
+# BACKEND - ANALYZERS
+# =============================================================================
+
+# Story 4 - Sprint Health Analyzer
+/backend/src/analyzers/sprintHealthAnalyzer.js @story-4-owner
+
+# Story 5 - Ticket Quality Checker
+/backend/src/analyzers/ticketQualityAnalyzer.js @story-5-owner
+
+# Story 6 - Sprint Prep Analyzer
+/backend/src/analyzers/sprintPrepAnalyzer.js @story-6-owner
+
+# Story 7 - Action Items & Integration
+/backend/src/analyzers/actionItemsAnalyzer.js @story-7-owner
+/backend/src/index.js                         @story-7-owner
+
+# Barrel exports - require review from multiple owners
+/backend/src/analyzers/index.js @story-4-owner @story-5-owner @story-6-owner @story-7-owner
+
+# =============================================================================
+# BACKEND - SHARED UTILITIES
+# =============================================================================
+
+/backend/src/utils/             @tech-lead
+/backend/__tests__/             @story-8-owner
+
+# =============================================================================
+# STORY 8 - Testing & Documentation
+# =============================================================================
+
+/backend/__tests__/             @story-8-owner
+/tests/                         @story-8-owner

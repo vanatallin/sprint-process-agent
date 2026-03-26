@@ -1,11 +1,11 @@
 /**
- * Claude Analyzer Tests
+ * Analyzers Tests
  *
  * Tests for sprint health analysis and ticket quality checking.
  * Story 4 & 5 - Unit tests for analyzer logic
  */
 
-require('../src/analyzers/claudeAnalyzer');
+require('../src/analyzers');
 
 // Mock the SSM client
 jest.mock('../src/utils/ssm', () => ({

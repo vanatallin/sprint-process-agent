@@ -27,19 +27,60 @@ Sprint Agent automates analysis using Claude AI:
 
 ## Quick Start
 
-**Prerequisites:** Node.js 18+, npm 9+, AWS CLI, MCP servers for Jira/Google Docs
+**Prerequisites:** Node.js 18+, npm 9+
+
+### 1. Install Dependencies
 
 ```bash
-git clone https://github.com/your-org/sprint-agent.git
-cd sprint-agent
-npm install && npm run prepare
+git clone https://github.com/vanatallin/sprint-process-agent.git
+cd sprint-process-agent
+
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
 cd backend && npm install && cd ..
-npm run dev  # Open http://localhost:5173
 ```
 
-**Environment:** Create `.env` with `VITE_API_URL=http://localhost:3001`
+### 2. Configure Environment
 
-**AWS SSM Parameters:**
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env and set:
+# VITE_API_URL=http://localhost:3001  (for local backend)
+# Or use your deployed API Gateway URL
+```
+
+### 3. Run the Application
+
+**Frontend only (uses mock data):**
+```bash
+npm run dev
+# Opens http://localhost:3000
+```
+
+**Backend local server:**
+```bash
+cd backend
+npm run dev
+# Runs on http://localhost:3001
+```
+
+**Run both together:**
+```bash
+# Terminal 1 - Backend
+cd backend && npm run dev
+
+# Terminal 2 - Frontend
+npm run dev
+```
+
+### AWS SSM Parameters (for deployed backend)
+
+When deploying to AWS Lambda, these parameters must be set in SSM Parameter Store:
+
 - `/sprint-poc/dev/claude-api-key` - Anthropic API key
 - `/sprint-poc/dev/jira-board-id` - Jira board ID
 - `/sprint-poc/dev/refinement-doc-id` - Refinement Google Doc ID

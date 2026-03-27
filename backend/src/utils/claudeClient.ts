@@ -9,19 +9,39 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getParameter } from './ssm.js';
 import type { ClaudeMessageOptions, ClaudeResponse } from '../types/index.js';
 
-let anthropic: Anthropic | null = null;
+// Client promise for lazy initialization
+const clientPromise: Promise<Anthropic> = initializeClient();
 
 /**
- * Get or create Claude client (singleton)
+ * Get API key from environment or AWS SSM
+ * For local development, set ANTHROPIC_API_KEY or CLAUDE_API_KEY environment variable
  */
-export async function getClaudeClient(): Promise<Anthropic> {
-  if (anthropic) {
-    return anthropic;
+async function getApiKey(): Promise<string> {
+  // Check environment variables first (for local development)
+  const envKey = process.env.ANTHROPIC_API_KEY ?? process.env.CLAUDE_API_KEY;
+  if (envKey !== undefined && envKey !== '') {
+    console.log('Using Claude API key from environment variable');
+    return envKey;
   }
 
-  const apiKey = await getParameter('/sprint-poc/dev/claude-api-key');
-  anthropic = new Anthropic({ apiKey });
-  return anthropic;
+  // Fall back to AWS SSM (for deployed environments)
+  console.log('Fetching Claude API key from AWS SSM...');
+  return getParameter('/sprint-poc/dev/claude-api-key');
+}
+
+/**
+ * Initialize Claude client
+ */
+async function initializeClient(): Promise<Anthropic> {
+  const apiKey = await getApiKey();
+  return new Anthropic({ apiKey });
+}
+
+/**
+ * Get Claude client (singleton)
+ */
+export async function getClaudeClient(): Promise<Anthropic> {
+  return clientPromise;
 }
 
 /**
@@ -35,7 +55,7 @@ export function parseClaudeResponse<T>(response: ClaudeResponse): T {
   } catch {
     // Try to extract JSON from markdown code blocks
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
+    if (jsonMatch !== null) {
       return JSON.parse(jsonMatch[1].trim()) as T;
     }
 

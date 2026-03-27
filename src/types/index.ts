@@ -4,38 +4,38 @@
 
 // Sprint Types
 export interface Sprint {
-  id: number;
-  name: string;
-  startDate: string;
-  endDate: string;
-  daysRemaining: number;
+  readonly id: number;
+  readonly name: string;
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly daysRemaining: number;
 }
 
 export interface SprintMetrics {
-  totalPoints: number;
-  completedPoints: number;
-  completionPct: number;
+  readonly totalPoints: number;
+  readonly completedPoints: number;
+  readonly completionPct: number;
 }
 
 // Stale Tickets
 export interface StaleTicket {
-  ticketKey: string;
-  daysSinceUpdate: number;
-  reason: string;
-  recommendation: string;
-  assignee: string;
+  readonly ticketKey: string;
+  readonly daysSinceUpdate: number;
+  readonly reason: string;
+  readonly recommendation: string;
+  readonly assignee: string;
 }
 
 // Workload
 export interface WorkloadPerson {
-  person: string;
-  currentPoints: number;
-  reasoning: string;
+  readonly person: string;
+  readonly currentPoints: number;
+  readonly reasoning: string;
 }
 
 export interface WorkloadAnalysis {
-  overloaded: WorkloadPerson[];
-  underutilized: WorkloadPerson[];
+  readonly overloaded: readonly WorkloadPerson[];
+  readonly underutilized: readonly WorkloadPerson[];
 }
 
 // Predictions
@@ -45,18 +45,18 @@ export type HealthStatus = 'healthy' | 'at-risk' | 'critical';
 export type QualityLevel = 'high' | 'medium' | 'low';
 
 export interface CompletionPrediction {
-  likelihood: LikelihoodLevel;
-  reasoning: string;
-  confidence: ConfidenceLevel;
+  readonly likelihood: LikelihoodLevel;
+  readonly reasoning: string;
+  readonly confidence: ConfidenceLevel;
 }
 
 // Sprint Analysis
 export interface SprintAnalysis {
-  sprintHealth: HealthStatus;
-  completionPrediction: CompletionPrediction;
-  staleTickets: StaleTicket[];
-  workloadAnalysis: WorkloadAnalysis;
-  insights: string;
+  readonly sprintHealth: HealthStatus;
+  readonly completionPrediction: CompletionPrediction;
+  readonly staleTickets: readonly StaleTicket[];
+  readonly workloadAnalysis: WorkloadAnalysis;
+  readonly insights: string;
 }
 
 // Quality Issues
@@ -68,57 +68,57 @@ export type QualityIssueType =
   | 'missing-details';
 
 export interface QualityIssue {
-  type: QualityIssueType;
-  severity: 'high' | 'medium' | 'low';
-  description: string;
-  suggestion: string;
+  readonly type: QualityIssueType;
+  readonly severity: 'high' | 'medium' | 'low';
+  readonly description: string;
+  readonly suggestion: string;
 }
 
 export interface ScopeCreepItem {
-  item: string;
-  location: 'description' | 'ac';
-  recommendation: string;
+  readonly item: string;
+  readonly location: 'description' | 'ac';
+  readonly recommendation: string;
 }
 
 export interface MissingRequirement {
-  item: string;
-  sourceDoc: 'refinement' | 'tech-design';
-  recommendation: string;
+  readonly item: string;
+  readonly sourceDoc: 'refinement' | 'tech-design';
+  readonly recommendation: string;
 }
 
 export interface QualityResult {
-  ticketKey: string;
-  quality: QualityLevel;
-  qualityScore: number;
-  issues: QualityIssue[];
-  scopeCreep: ScopeCreepItem[];
-  missingRequirements: MissingRequirement[];
-  overallAssessment: string;
+  readonly ticketKey: string;
+  readonly quality: QualityLevel;
+  readonly qualityScore: number;
+  readonly issues: readonly QualityIssue[];
+  readonly scopeCreep: readonly ScopeCreepItem[];
+  readonly missingRequirements: readonly MissingRequirement[];
+  readonly overallAssessment: string;
 }
 
 // Action Items
 export type ActionItemType = 'process' | 'capacity' | 'quality' | 'technical';
 
 export interface ActionItem {
-  type: ActionItemType;
-  priority: 'high' | 'medium' | 'low';
-  action: string;
-  expectedImpact: string;
-  responsible: string;
-  timeline: string;
+  readonly type: ActionItemType;
+  readonly priority: 'high' | 'medium' | 'low';
+  readonly action: string;
+  readonly expectedImpact: string;
+  readonly responsible: string;
+  readonly timeline: string;
 }
 
 // API Response
 export interface SprintData {
-  sprint: Sprint;
-  metrics: SprintMetrics;
-  ticketCount: number;
+  readonly sprint: Sprint;
+  readonly metrics: SprintMetrics;
+  readonly ticketCount: number;
 }
 
 export interface AnalysisResponse {
-  success: boolean;
-  sprintAnalysis: SprintAnalysis;
-  qualityResults: QualityResult[];
-  actionItems: ActionItem[];
-  sprintData: SprintData;
+  readonly success: boolean;
+  readonly sprintAnalysis: SprintAnalysis;
+  readonly qualityResults: readonly QualityResult[];
+  readonly actionItems: readonly ActionItem[];
+  readonly sprintData: SprintData;
 }

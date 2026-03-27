@@ -1,20 +1,20 @@
-import { createApp } from 'vue';
-import { createRouter, createWebHistory } from 'vue-router';
+import { createApp, type Component } from 'vue';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import App from './App.vue';
 import './assets/main.css';
 
 // Routes
-const routes = [
+const routes: readonly RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Dashboard',
-    component: () => import('./views/DashboardView.vue'),
+    component: (): Promise<Component> => import('./views/DashboardView.vue'),
   },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: routes as RouteRecordRaw[],
 });
 
 const app = createApp(App);

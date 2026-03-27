@@ -30,6 +30,28 @@ export async function analyzeSprintHealth(sprintData: JiraSprintData): Promise<S
  * Build user prompt for sprint health analysis
  */
 export function buildSprintHealthPrompt(sprintData: JiraSprintData): string {
+  const workloadList = sprintData.workload
+    .map(w => `- ${w.name}: ${w.points} points (${w.tickets.length} tickets)`)
+    .join('\n');
+
+  const ticketsList = sprintData.tickets
+    .map(t => {
+      const commentsList = t.comments
+        .map(c => `  - ${c.author}: ${c.body}`)
+        .join('\n');
+
+      return `
+Ticket: ${t.key}
+Summary: ${t.summary}
+Status: ${t.status}
+Points: ${t.storyPoints}
+Assignee: ${t.assignee}
+Days since update: ${t.daysSinceUpdate}
+Recent comments:
+${commentsList}`;
+    })
+    .join('\n---\n');
+
   return `Analyze this sprint:
 
 SPRINT: ${sprintData.sprint.name}
@@ -39,19 +61,10 @@ Completed points: ${sprintData.metrics.completedPoints}
 Completion: ${sprintData.metrics.completionPct.toFixed(1)}%
 
 TEAM WORKLOAD:
-${sprintData.workload.map(w => `- ${w.name}: ${w.points} points (${w.tickets.length} tickets)`).join('\n')}
+${workloadList}
 
 TICKETS:
-${sprintData.tickets.map(t => `
-Ticket: ${t.key}
-Summary: ${t.summary}
-Status: ${t.status}
-Points: ${t.storyPoints}
-Assignee: ${t.assignee}
-Days since update: ${t.daysSinceUpdate}
-Recent comments:
-${t.comments.map(c => `  - ${c.author}: ${c.body}`).join('\n')}
-`).join('\n---\n')}
+${ticketsList}
 
 Provide comprehensive analysis.`;
 }

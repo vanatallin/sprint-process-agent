@@ -31,157 +31,157 @@ export type ActionItemType = 'process' | 'capacity' | 'quality' | 'technical';
 
 // Sprint Analysis Types
 export interface StaleTicket {
-  ticketKey: string;
-  daysSinceUpdate: number;
-  reason: string;
-  recommendation: string;
-  assignee: string;
+  readonly ticketKey: string;
+  readonly daysSinceUpdate: number;
+  readonly reason: string;
+  readonly recommendation: string;
+  readonly assignee: string;
 }
 
 export interface WorkloadPerson {
-  person: string;
-  currentPoints: number;
-  reasoning: string;
+  readonly person: string;
+  readonly currentPoints: number;
+  readonly reasoning: string;
 }
 
 export interface WorkloadAnalysis {
-  overloaded: WorkloadPerson[];
-  underutilized: WorkloadPerson[];
+  readonly overloaded: readonly WorkloadPerson[];
+  readonly underutilized: readonly WorkloadPerson[];
 }
 
 export interface CompletionPrediction {
-  likelihood: LikelihoodLevel;
-  reasoning: string;
-  confidence: ConfidenceLevel;
+  readonly likelihood: LikelihoodLevel;
+  readonly reasoning: string;
+  readonly confidence: ConfidenceLevel;
 }
 
 export interface SprintHealthAnalysis {
-  sprintHealth: HealthStatus;
-  completionPrediction: CompletionPrediction;
-  staleTickets: StaleTicket[];
-  workloadAnalysis: WorkloadAnalysis;
-  insights: string;
+  readonly sprintHealth: HealthStatus;
+  readonly completionPrediction: CompletionPrediction;
+  readonly staleTickets: readonly StaleTicket[];
+  readonly workloadAnalysis: WorkloadAnalysis;
+  readonly insights: string;
 }
 
 // Quality Types
 export interface QualityIssue {
-  type: QualityIssueType;
-  severity: 'high' | 'medium' | 'low';
-  description: string;
-  suggestion: string;
+  readonly type: QualityIssueType;
+  readonly severity: 'high' | 'medium' | 'low';
+  readonly description: string;
+  readonly suggestion: string;
 }
 
 export interface ScopeCreepItem {
-  item: string;
-  location: 'description' | 'ac';
-  recommendation: string;
+  readonly item: string;
+  readonly location: 'description' | 'ac';
+  readonly recommendation: string;
 }
 
 export interface MissingRequirement {
-  item: string;
-  sourceDoc: 'refinement' | 'tech-design';
-  recommendation: string;
+  readonly item: string;
+  readonly sourceDoc: 'refinement' | 'tech-design';
+  readonly recommendation: string;
 }
 
 export interface QualityResult {
-  ticketKey?: string;
-  quality: QualityLevel;
-  qualityScore: number;
-  issues: QualityIssue[];
-  scopeCreep: ScopeCreepItem[];
-  missingRequirements: MissingRequirement[];
-  overallAssessment: string;
+  readonly ticketKey?: string;
+  readonly quality: QualityLevel;
+  readonly qualityScore: number;
+  readonly issues: readonly QualityIssue[];
+  readonly scopeCreep: readonly ScopeCreepItem[];
+  readonly missingRequirements: readonly MissingRequirement[];
+  readonly overallAssessment: string;
 }
 
 // Action Items
 export interface ActionItem {
-  type: ActionItemType;
-  priority: 'high' | 'medium' | 'low';
-  action: string;
-  expectedImpact: string;
-  responsible: string;
-  timeline: string;
+  readonly type: ActionItemType;
+  readonly priority: 'high' | 'medium' | 'low';
+  readonly action: string;
+  readonly expectedImpact: string;
+  readonly responsible: string;
+  readonly timeline: string;
 }
 
 // Jira Types
 export interface JiraComment {
-  author: string;
-  body: string;
+  readonly author: string;
+  readonly body: string;
 }
 
 export interface JiraTicket {
-  key: string;
-  summary: string;
-  status: string;
-  storyPoints: number;
-  assignee: string;
-  description?: string;
-  acceptanceCriteria?: string;
-  daysSinceUpdate: number;
-  comments: JiraComment[];
-  labels?: string[];
+  readonly key: string;
+  readonly summary: string;
+  readonly status: string;
+  readonly storyPoints: number;
+  readonly assignee: string;
+  readonly description?: string;
+  readonly acceptanceCriteria?: string;
+  readonly daysSinceUpdate: number;
+  readonly comments: readonly JiraComment[];
+  readonly labels?: readonly string[];
 }
 
 export interface JiraWorkload {
-  name: string;
-  points: number;
-  tickets: string[];
+  readonly name: string;
+  readonly points: number;
+  readonly tickets: readonly string[];
 }
 
 export interface JiraSprintData {
-  sprint: {
-    name: string;
-    daysRemaining: number;
+  readonly sprint: {
+    readonly name: string;
+    readonly daysRemaining: number;
   };
-  metrics: {
-    totalPoints: number;
-    completedPoints: number;
-    completionPct: number;
+  readonly metrics: {
+    readonly totalPoints: number;
+    readonly completedPoints: number;
+    readonly completionPct: number;
   };
-  workload: JiraWorkload[];
-  tickets: JiraTicket[];
+  readonly workload: readonly JiraWorkload[];
+  readonly tickets: readonly JiraTicket[];
 }
 
 // Claude Client Types
 export interface ClaudeMessageOptions {
-  systemPrompt: string;
-  userPrompt: string;
-  maxTokens?: number;
+  readonly systemPrompt: string;
+  readonly userPrompt: string;
+  readonly maxTokens?: number;
 }
 
 export interface ClaudeContentBlock {
-  text: string;
+  readonly text: string;
 }
 
 export interface ClaudeResponse {
-  content: ClaudeContentBlock[];
+  readonly content: readonly ClaudeContentBlock[];
 }
 
 // Storage Types
 export interface StorageResult {
-  location: string;
-  key: string;
-  timestamp: string;
+  readonly location: string;
+  readonly key: string;
+  readonly timestamp: string;
 }
 
 export interface StorageHealthCheck {
-  status: 'ok' | 'error';
-  bucket?: string;
-  error?: string;
+  readonly status: 'ok' | 'error';
+  readonly bucket?: string;
+  readonly error?: string;
 }
 
 // Lambda Types
 export interface LambdaEvent {
-  body?: string;
-  headers: Record<string, string | undefined>;
-  httpMethod: string;
-  path: string;
+  readonly body?: string;
+  readonly headers: Readonly<Record<string, string | undefined>>;
+  readonly httpMethod: string;
+  readonly path: string;
 }
 
 export interface LambdaResponse {
-  statusCode: number;
-  headers: Record<string, string>;
-  body: string;
+  readonly statusCode: number;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly body: string;
 }
 
 // Express Types
@@ -189,12 +189,12 @@ export type ExpressHandler = (req: Request, res: Response) => Promise<void>;
 
 // Sprint Prep Types
 export interface SprintReadiness {
-  overall: 'ready' | 'needs-work' | 'not-ready';
-  ticketReadiness: {
-    ready: number;
-    needsWork: number;
-    notReady: number;
+  readonly overall: 'ready' | 'needs-work' | 'not-ready';
+  readonly ticketReadiness: {
+    readonly ready: number;
+    readonly needsWork: number;
+    readonly notReady: number;
   };
-  blockers: string[];
-  recommendations: string[];
+  readonly blockers: readonly string[];
+  readonly recommendations: readonly string[];
 }

@@ -16,6 +16,7 @@ import { NotImplementedError, type SprintHealthAnalysis, type QualityResult, typ
 export async function fetchDocument(documentId: string): Promise<string> {
   // TODO: Implement MCP integration for Google Docs
   // See Story 9 acceptance criteria for details
+  await Promise.resolve(); // Placeholder for async operation
   throw new NotImplementedError(`Google Docs MCP integration not yet implemented - see Story 9. Doc ID: ${documentId}`);
 }
 
@@ -24,6 +25,7 @@ export async function fetchDocument(documentId: string): Promise<string> {
  */
 export async function fetchRefinementDoc(): Promise<string> {
   // TODO: Get doc ID from SSM parameter /sprint-poc/dev/refinement-doc-id
+  await Promise.resolve(); // Placeholder for async operation
   throw new NotImplementedError('Google Docs MCP integration not yet implemented - see Story 9');
 }
 
@@ -32,6 +34,7 @@ export async function fetchRefinementDoc(): Promise<string> {
  */
 export async function fetchTechDesignDoc(): Promise<string> {
   // TODO: Get doc ID from SSM parameter /sprint-poc/dev/tech-design-doc-id
+  await Promise.resolve(); // Placeholder for async operation
   throw new NotImplementedError('Google Docs MCP integration not yet implemented - see Story 9');
 }
 
@@ -41,6 +44,7 @@ export async function fetchTechDesignDoc(): Promise<string> {
  */
 export async function appendToStatusReport(_content: string): Promise<void> {
   // TODO: Implement for Story 10
+  await Promise.resolve(); // Placeholder for async operation
   throw new NotImplementedError('Google Docs write integration not yet implemented - see Story 10');
 }
 
@@ -50,8 +54,8 @@ export async function appendToStatusReport(_content: string): Promise<void> {
  */
 export function generateStatusReportContent(
   sprintAnalysis: SprintHealthAnalysis,
-  _qualityResults: QualityResult[],
-  _actionItems: ActionItem[]
+  _qualityResults: readonly QualityResult[],
+  _actionItems: readonly ActionItem[]
 ): string {
   // TODO: Implement for Story 10
   const timestamp = new Date().toISOString();

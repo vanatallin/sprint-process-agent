@@ -11,15 +11,15 @@
 import { NotImplementedError, type SprintHealthAnalysis, type QualityResult, type HealthStatus } from '../../types/index.js';
 
 interface SlackBlock {
-  type: string;
-  text?: {
-    type: string;
-    text: string;
+  readonly type: string;
+  readonly text?: {
+    readonly type: string;
+    readonly text: string;
   };
-  fields?: Array<{
-    type: string;
-    text: string;
-  }>;
+  readonly fields?: readonly {
+    readonly type: string;
+    readonly text: string;
+  }[];
 }
 
 /**
@@ -31,6 +31,7 @@ export async function postSprintHealthReport(
 ): Promise<void> {
   // TODO: Implement Slack integration
   // See Story 11 acceptance criteria for details
+  await Promise.resolve(); // Placeholder for async operation
   throw new NotImplementedError('Slack integration not yet implemented - see Story 11');
 }
 
@@ -38,18 +39,19 @@ export async function postSprintHealthReport(
  * Post ticket quality report to Slack
  */
 export async function postQualityReport(
-  _qualityResults: QualityResult[],
+  _qualityResults: readonly QualityResult[],
   _channel: string
 ): Promise<void> {
   // TODO: Implement Slack integration
+  await Promise.resolve(); // Placeholder for async operation
   throw new NotImplementedError('Slack integration not yet implemented - see Story 11');
 }
 
 /**
  * Format sprint health message using Slack Block Kit
  */
-export function formatSprintHealthBlocks(sprintAnalysis: SprintHealthAnalysis): SlackBlock[] {
-  const healthEmoji: Record<HealthStatus, string> = {
+export function formatSprintHealthBlocks(sprintAnalysis: SprintHealthAnalysis): readonly SlackBlock[] {
+  const healthEmoji: Readonly<Record<HealthStatus, string>> = {
     healthy: ':white_check_mark:',
     'at-risk': ':warning:',
     critical: ':rotating_light:'
@@ -60,7 +62,7 @@ export function formatSprintHealthBlocks(sprintAnalysis: SprintHealthAnalysis): 
       type: 'header',
       text: {
         type: 'plain_text',
-        text: `Sprint Health Report ${healthEmoji[sprintAnalysis.sprintHealth] || ''}`
+        text: `Sprint Health Report ${healthEmoji[sprintAnalysis.sprintHealth]}`
       }
     },
     {
@@ -72,7 +74,7 @@ export function formatSprintHealthBlocks(sprintAnalysis: SprintHealthAnalysis): 
         },
         {
           type: 'mrkdwn',
-          text: `*Completion:* ${sprintAnalysis.completionPrediction?.likelihood || 'unknown'}`
+          text: `*Completion:* ${sprintAnalysis.completionPrediction.likelihood}`
         }
       ]
     }
@@ -86,6 +88,7 @@ export function formatSprintHealthBlocks(sprintAnalysis: SprintHealthAnalysis): 
 export async function lookupUserByEmail(_email: string): Promise<string | null> {
   // TODO: Implement user lookup for @mentions
   // Requires Slack scope: users:read
+  await Promise.resolve(); // Placeholder for async operation
   return null;
 }
 

@@ -40,7 +40,7 @@
 import type { StaleTicket } from '@/types';
 
 interface Props {
-  staleTickets: StaleTicket[];
+  staleTickets: readonly StaleTicket[];
 }
 
 defineProps<Props>();

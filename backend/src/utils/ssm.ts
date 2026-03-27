@@ -4,7 +4,7 @@
 
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 
-const ssmClient = new SSMClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const ssmClient = new SSMClient({ region: process.env.AWS_REGION ?? 'us-east-1' });
 
 // Cache for parameters
 const parameterCache = new Map<string, string>();
@@ -27,7 +27,7 @@ export async function getParameter(name: string): Promise<string> {
   const response = await ssmClient.send(command);
   const value = response.Parameter?.Value;
 
-  if (!value) {
+  if (value === undefined || value === '') {
     throw new Error(`Parameter ${name} not found or has no value`);
   }
 

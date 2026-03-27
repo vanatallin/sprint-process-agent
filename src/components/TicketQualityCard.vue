@@ -67,7 +67,7 @@ import { computed } from 'vue';
 import type { QualityResult, QualityLevel } from '@/types';
 
 interface Props {
-  qualityResults: QualityResult[];
+  qualityResults: readonly QualityResult[];
 }
 
 const props = defineProps<Props>();

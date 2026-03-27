@@ -55,7 +55,7 @@
 import type { ActionItem } from '@/types';
 
 interface Props {
-  actionItems: ActionItem[];
+  actionItems?: readonly ActionItem[];
 }
 
 const props = withDefaults(defineProps<Props>(), {

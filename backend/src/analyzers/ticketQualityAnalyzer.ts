@@ -35,21 +35,19 @@ export async function checkTicketQuality(
  * Check quality for multiple tickets
  */
 export async function checkAllTicketsQuality(
-  tickets: JiraTicket[],
+  tickets: readonly JiraTicket[],
   refinementDoc = '',
   techDesignDoc = ''
-): Promise<QualityResult[]> {
-  const results: QualityResult[] = [];
-
-  for (const ticket of tickets) {
+): Promise<readonly QualityResult[]> {
+  const qualityPromises = tickets.map(async (ticket) => {
     const quality = await checkTicketQuality(ticket, refinementDoc, techDesignDoc);
-    results.push({
-      ticketKey: ticket.key,
-      ...quality
-    });
-  }
+    return {
+      ...quality,
+      ticketKey: ticket.key
+    };
+  });
 
-  return results;
+  return Promise.all(qualityPromises);
 }
 
 /**
@@ -60,25 +58,32 @@ export function buildQualityCheckPrompt(
   refinementDoc: string,
   techDesignDoc: string
 ): string {
+  const description = ticket.description ?? 'No description provided';
+  const labels = ticket.labels !== undefined && ticket.labels.length > 0
+    ? ticket.labels.join(', ')
+    : 'None';
+  const refinement = refinementDoc !== '' ? refinementDoc : 'No refinement document provided';
+  const techDesign = techDesignDoc !== '' ? techDesignDoc : 'No tech design document provided';
+
   return `Analyze this ticket quality:
 
 TICKET: ${ticket.key}
 Summary: ${ticket.summary}
 
 Description:
-${ticket.description || 'No description provided'}
+${description}
 
-Labels: ${ticket.labels?.join(', ') || 'None'}
+Labels: ${labels}
 
 ---
 
 REFINEMENT DOCUMENT:
-${refinementDoc || 'No refinement document provided'}
+${refinement}
 
 ---
 
 TECH DESIGN DOCUMENT:
-${techDesignDoc || 'No tech design document provided'}
+${techDesign}
 
 ---
 

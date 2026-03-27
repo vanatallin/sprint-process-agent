@@ -17,13 +17,13 @@ import { SPRINT_PREP_PROMPT } from '../prompts/index.js';
 import type { JiraSprintData, SprintReadiness } from '../types/index.js';
 
 interface TeamCapacity {
-  [name: string]: number;
+  readonly [name: string]: number;
 }
 
 interface SprintPrepData extends JiraSprintData {
-  sprint: JiraSprintData['sprint'] & {
-    startDate?: string;
-    duration?: string;
+  readonly sprint: JiraSprintData['sprint'] & {
+    readonly startDate?: string;
+    readonly duration?: string;
   };
 }
 
@@ -54,29 +54,49 @@ export function buildSprintPrepPrompt(
   techDesignDoc: string,
   teamCapacity: TeamCapacity
 ): string {
-  return `Analyze this upcoming sprint for readiness:
+  const sprintName = sprintData.sprint.name;
+  const startDate = sprintData.sprint.startDate ?? 'Not set';
+  const duration = sprintData.sprint.duration ?? '2 weeks';
 
-SPRINT: ${sprintData.sprint?.name || 'Unknown'}
-Planned Start: ${sprintData.sprint?.startDate || 'Not set'}
-Duration: ${sprintData.sprint?.duration || '2 weeks'}
+  const capacityList = Object.entries(teamCapacity)
+    .map(([name, capacity]) => `- ${name}: ${capacity} points available`)
+    .join('\n');
 
-TEAM CAPACITY:
-${Object.entries(teamCapacity).map(([name, capacity]) => `- ${name}: ${capacity} points available`).join('\n') || 'No capacity data provided'}
+  const ticketsList = sprintData.tickets
+    .map(t => {
+      const points = t.storyPoints > 0 ? String(t.storyPoints) : 'Not estimated';
+      const assignee = t.assignee !== '' ? t.assignee : 'Unassigned';
+      const hasAC = t.acceptanceCriteria !== undefined && t.acceptanceCriteria !== '' ? 'Yes' : 'No';
 
-COMMITTED TICKETS:
-${(sprintData.tickets || []).map(t => `
+      return `
 Ticket: ${t.key}
 Summary: ${t.summary}
-Points: ${t.storyPoints || 'Not estimated'}
-Assignee: ${t.assignee || 'Unassigned'}
-Has AC: ${t.acceptanceCriteria ? 'Yes' : 'No'}
-`).join('\n---\n')}
+Points: ${points}
+Assignee: ${assignee}
+Has AC: ${hasAC}`;
+    })
+    .join('\n---\n');
+
+  const refinement = refinementDoc !== '' ? refinementDoc : 'No refinement document provided';
+  const techDesign = techDesignDoc !== '' ? techDesignDoc : 'No tech design document provided';
+
+  return `Analyze this upcoming sprint for readiness:
+
+SPRINT: ${sprintName}
+Planned Start: ${startDate}
+Duration: ${duration}
+
+TEAM CAPACITY:
+${capacityList.length > 0 ? capacityList : 'No capacity data provided'}
+
+COMMITTED TICKETS:
+${ticketsList}
 
 REFINEMENT DOCUMENT:
-${refinementDoc || 'No refinement document provided'}
+${refinement}
 
 TECH DESIGN DOCUMENT:
-${techDesignDoc || 'No tech design document provided'}
+${techDesign}
 
 Analyze if this sprint is ready to begin.`;
 }

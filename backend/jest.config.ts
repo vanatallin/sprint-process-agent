@@ -19,6 +19,6 @@ const config: JestConfigWithTsJest = {
   },
   testMatch: ['**/__tests__/**/*.test.ts'],
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts']
-};
+} as const;
 
 export default config;

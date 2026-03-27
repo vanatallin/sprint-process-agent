@@ -35,15 +35,15 @@ import {
 } from './types/index.js';
 
 interface AnalysisResults {
-  sprintAnalysis: SprintHealthAnalysis;
-  qualityResults: QualityResult[];
-  actionItems: ActionItem[];
-  sprintData: {
-    sprint: { name: string; daysRemaining: number };
-    metrics: { totalPoints: number; completedPoints: number; completionPct: number };
-    ticketCount: number;
+  readonly sprintAnalysis: SprintHealthAnalysis;
+  readonly qualityResults: readonly QualityResult[];
+  readonly actionItems: readonly ActionItem[];
+  readonly sprintData: {
+    readonly sprint: { readonly name: string; readonly daysRemaining: number };
+    readonly metrics: { readonly totalPoints: number; readonly completedPoints: number; readonly completionPct: number };
+    readonly ticketCount: number;
   };
-  storage?: StorageResult | null;
+  readonly storage?: StorageResult | null;
 }
 
 /**
@@ -94,13 +94,14 @@ export async function handler(_event: LambdaEvent): Promise<LambdaResponse> {
       }
     };
 
-    let storageResult: StorageResult | null = null;
-    try {
-      storageResult = await storage.saveDailyAnalysis(analysisResults);
-      console.log(`Analysis saved to: ${storageResult.location}`);
-    } catch (storageError) {
+    const storageResult = await storage.saveDailyAnalysis(analysisResults).catch((storageError: Error) => {
       // Log but don't fail - storage is not critical for the response
-      console.error('Failed to save to storage:', (storageError as Error).message);
+      console.error('Failed to save to storage:', storageError.message);
+      return null;
+    });
+
+    if (storageResult !== null) {
+      console.log(`Analysis saved to: ${storageResult.location}`);
     }
 
     // 7. TODO: Post to Slack (Story 11)

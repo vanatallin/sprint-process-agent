@@ -5,7 +5,10 @@
 
 import type { AnalysisResponse, HealthStatus } from '@/types';
 
-const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL: string =
+  typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL !== ''
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
 
 export const sprintService = {
   /**
@@ -20,8 +23,12 @@ export const sprintService = {
     });
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(errorData.error || `Analysis failed: ${response.status}`);
+      const errorData = (await response.json().catch(() => ({}))) as { readonly error?: string };
+      const errorMessage =
+        errorData.error !== undefined && errorData.error !== ''
+          ? errorData.error
+          : `Analysis failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json() as Promise<AnalysisResponse>;

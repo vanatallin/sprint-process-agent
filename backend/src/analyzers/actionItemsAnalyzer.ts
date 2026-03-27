@@ -13,7 +13,7 @@ import { ACTION_ITEMS_PROMPT } from '../prompts/index.js';
 import type { SprintHealthAnalysis, QualityResult, ActionItem } from '../types/index.js';
 
 interface ActionItemsResponse {
-  actionItems: ActionItem[];
+  readonly actionItems: readonly ActionItem[];
 }
 
 /**
@@ -21,8 +21,8 @@ interface ActionItemsResponse {
  */
 export async function generateActionItems(
   sprintAnalysis: SprintHealthAnalysis,
-  qualityResults: QualityResult[]
-): Promise<ActionItem[]> {
+  qualityResults: readonly QualityResult[]
+): Promise<readonly ActionItem[]> {
   const userPrompt = buildActionItemsPrompt(sprintAnalysis, qualityResults);
 
   const result = await sendClaudeMessage<ActionItemsResponse>({
@@ -31,7 +31,7 @@ export async function generateActionItems(
     maxTokens: 2000
   });
 
-  return result.actionItems || [];
+  return result.actionItems;
 }
 
 /**
@@ -39,27 +39,39 @@ export async function generateActionItems(
  */
 export function buildActionItemsPrompt(
   sprintAnalysis: SprintHealthAnalysis,
-  qualityResults: QualityResult[]
+  qualityResults: readonly QualityResult[]
 ): string {
   const lowQualityTickets = qualityResults.filter(
     r => r.quality === 'low' || r.quality === 'medium'
   );
 
+  const staleTicketsList = sprintAnalysis.staleTickets
+    .map(t => `- ${t.ticketKey}: ${t.reason}`)
+    .join('\n');
+
+  const overloadedList = sprintAnalysis.workloadAnalysis.overloaded
+    .map(p => p.person)
+    .join(', ');
+
+  const underutilizedList = sprintAnalysis.workloadAnalysis.underutilized
+    .map(p => p.person)
+    .join(', ');
+
   return `Based on the sprint analysis, generate action items for the next sprint:
 
 SPRINT HEALTH: ${sprintAnalysis.sprintHealth}
-COMPLETION PREDICTION: ${sprintAnalysis.completionPrediction?.likelihood || 'unknown'}
+COMPLETION PREDICTION: ${sprintAnalysis.completionPrediction.likelihood}
 
-STALE TICKETS: ${sprintAnalysis.staleTickets?.length || 0}
-${(sprintAnalysis.staleTickets || []).map(t => `- ${t.ticketKey}: ${t.reason}`).join('\n')}
+STALE TICKETS: ${sprintAnalysis.staleTickets.length}
+${staleTicketsList}
 
 WORKLOAD ISSUES:
-Overloaded: ${(sprintAnalysis.workloadAnalysis?.overloaded || []).map(p => p.person).join(', ') || 'None'}
-Underutilized: ${(sprintAnalysis.workloadAnalysis?.underutilized || []).map(p => p.person).join(', ') || 'None'}
+Overloaded: ${overloadedList.length > 0 ? overloadedList : 'None'}
+Underutilized: ${underutilizedList.length > 0 ? underutilizedList : 'None'}
 
 QUALITY ISSUES: ${lowQualityTickets.length} tickets with issues
 
-KEY INSIGHTS: ${sprintAnalysis.insights || 'No insights available'}
+KEY INSIGHTS: ${sprintAnalysis.insights}
 
 Generate specific, actionable items for improving the next sprint.`;
 }

@@ -7,6 +7,9 @@
  * Usage: npm run dev (from backend directory)
  */
 
+// Load environment variables from .env file (must be first)
+import 'dotenv/config';
+
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import { handler } from './index.js';
@@ -14,14 +17,14 @@ import { storage } from './integrations/index.js';
 import type { LambdaEvent, HealthStatus } from './types/index.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT ?? '3001';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Health check
-app.get('/health', async (_req: Request, res: Response) => {
+app.get('/health', async (_req: Request, res: Response): Promise<void> => {
   const storageHealth = await storage.healthCheck();
   res.json({
     status: 'ok',
@@ -31,14 +34,14 @@ app.get('/health', async (_req: Request, res: Response) => {
 });
 
 // Main analysis endpoint - wraps Lambda handler
-app.post('/analyze-sprint', async (req: Request, res: Response) => {
+app.post('/analyze-sprint', async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Received analysis request');
 
     // Create Lambda-like event object
     const event: LambdaEvent = {
       body: JSON.stringify(req.body),
-      headers: req.headers as Record<string, string | undefined>,
+      headers: req.headers as Readonly<Record<string, string | undefined>>,
       httpMethod: 'POST',
       path: '/analyze-sprint'
     };
@@ -58,10 +61,12 @@ app.post('/analyze-sprint', async (req: Request, res: Response) => {
 });
 
 // List recent analyses from storage
-app.get('/analyses', async (req: Request, res: Response) => {
+app.get('/analyses', async (req: Request, res: Response): Promise<void> => {
   try {
-    const days = parseInt(req.query.days as string) || 7;
-    const analyses = await storage.listRecentAnalyses(days);
+    const daysParam = req.query.days;
+    const days = typeof daysParam === 'string' ? parseInt(daysParam, 10) : 7;
+    const validDays = Number.isNaN(days) ? 7 : days;
+    const analyses = await storage.listRecentAnalyses(validDays);
     res.json({ success: true, analyses });
   } catch (error) {
     console.error('Error listing analyses:', error);
@@ -70,7 +75,7 @@ app.get('/analyses', async (req: Request, res: Response) => {
 });
 
 // Get specific analysis by key
-app.get('/analyses/:date/:filename', async (req: Request, res: Response) => {
+app.get('/analyses/:date/:filename', async (req: Request, res: Response): Promise<void> => {
   try {
     const key = `daily/${req.params.date}/${req.params.filename}`;
     const analysis = await storage.getAnalysis(key);
@@ -82,11 +87,12 @@ app.get('/analyses/:date/:filename', async (req: Request, res: Response) => {
 });
 
 // Mock data endpoint for UI development
-app.get('/mock-analysis', (_req: Request, res: Response) => {
+app.get('/mock-analysis', (_req: Request, res: Response): void => {
+  const mockHealth: HealthStatus = 'at-risk';
   res.json({
     success: true,
     sprintAnalysis: {
-      sprintHealth: 'at-risk' as HealthStatus,
+      sprintHealth: mockHealth,
       completionPrediction: {
         likelihood: 'medium',
         reasoning: 'Several tickets are stale and workload is unbalanced',
@@ -148,7 +154,8 @@ app.get('/mock-analysis', (_req: Request, res: Response) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, (): void => {
+  const storageEndpoint = process.env.S3_ENDPOINT ?? 'AWS S3 (configure S3_ENDPOINT for MinIO)';
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║  Sprint Agent Backend - Local Development Server           ║
@@ -162,7 +169,7 @@ app.listen(PORT, () => {
 ║    GET  /analyses         - List recent analyses           ║
 ║    GET  /analyses/:date/  - Get specific analysis          ║
 ║                                                            ║
-║  Storage: ${process.env.S3_ENDPOINT || 'AWS S3 (configure S3_ENDPOINT for MinIO)'}
+║  Storage: ${storageEndpoint}
 ╚════════════════════════════════════════════════════════════╝
   `);
 });

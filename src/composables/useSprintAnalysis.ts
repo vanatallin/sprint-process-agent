@@ -3,10 +3,10 @@ import { sprintService } from '@/services/sprintService';
 import type { AnalysisResponse } from '@/types';
 
 interface UseSprintAnalysisReturn {
-  loading: Ref<boolean>;
-  error: Ref<string | null>;
-  results: Ref<AnalysisResponse | null>;
-  runAnalysis: () => Promise<void>;
+  readonly loading: Ref<boolean>;
+  readonly error: Ref<string | null>;
+  readonly results: Ref<AnalysisResponse | null>;
+  readonly runAnalysis: () => Promise<void>;
 }
 
 export function useSprintAnalysis(): UseSprintAnalysisReturn {

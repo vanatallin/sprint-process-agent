@@ -25,29 +25,29 @@ import type { SprintHealthAnalysis, QualityResult, ActionItem, StorageResult, St
 
 // Configuration from environment
 const config = {
-  bucket: process.env.S3_BUCKET || 'sprint-agent-data',
-  region: process.env.AWS_REGION || 'us-east-1',
+  bucket: process.env.S3_BUCKET ?? 'sprint-agent-data',
+  region: process.env.AWS_REGION ?? 'us-east-1',
   // For local MinIO development
-  endpoint: process.env.S3_ENDPOINT || null,
+  endpoint: process.env.S3_ENDPOINT ?? null,
   forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true'
-};
+} as const;
 
 interface AnalysisResults {
-  sprintAnalysis?: SprintHealthAnalysis;
-  qualityResults?: QualityResult[];
-  actionItems?: ActionItem[];
-  sprintData?: {
-    sprint?: {
-      name?: string;
+  readonly sprintAnalysis?: SprintHealthAnalysis;
+  readonly qualityResults?: readonly QualityResult[];
+  readonly actionItems?: readonly ActionItem[];
+  readonly sprintData?: {
+    readonly sprint?: {
+      readonly name?: string;
     };
   };
 }
 
 interface AnalysisMetadata {
-  key: string;
-  date: string;
-  lastModified?: Date;
-  size?: number;
+  readonly key: string;
+  readonly date: string;
+  readonly lastModified?: Date;
+  readonly size?: number;
 }
 
 /**
@@ -59,28 +59,29 @@ function createS3Client(): S3Client {
   };
 
   // If endpoint is set, use MinIO/local S3
-  if (config.endpoint) {
-    clientConfig.endpoint = config.endpoint;
-    clientConfig.forcePathStyle = true; // Required for MinIO
-    clientConfig.credentials = {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'minioadmin',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'minioadmin'
-    };
+  if (config.endpoint !== null) {
+    return new S3Client({
+      ...clientConfig,
+      endpoint: config.endpoint,
+      forcePathStyle: true, // Required for MinIO
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'minioadmin',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'minioadmin'
+      }
+    });
   }
 
   return new S3Client(clientConfig);
 }
 
-let s3Client: S3Client | null = null;
+// Singleton client instance
+const s3ClientInstance: S3Client = createS3Client();
 
 /**
- * Get or create S3 client (singleton)
+ * Get S3 client (singleton)
  */
 function getS3Client(): S3Client {
-  if (!s3Client) {
-    s3Client = createS3Client();
-  }
-  return s3Client;
+  return s3ClientInstance;
 }
 
 /**
@@ -107,7 +108,7 @@ export function getWeeklyKey(date: Date = new Date()): string {
  */
 function getWeekNumber(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
+  const dayNum = d.getUTCDay() === 0 ? 7 : d.getUTCDay();
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
@@ -134,8 +135,8 @@ export async function saveDailyAnalysis(analysisResults: AnalysisResults): Promi
     ContentType: 'application/json',
     Metadata: {
       'analysis-type': 'daily',
-      'sprint-name': analysisResults.sprintData?.sprint?.name || 'unknown',
-      'sprint-health': analysisResults.sprintAnalysis?.sprintHealth || 'unknown'
+      'sprint-name': analysisResults.sprintData?.sprint?.name ?? 'unknown',
+      'sprint-health': analysisResults.sprintAnalysis?.sprintHealth ?? 'unknown'
     }
   });
 
@@ -153,7 +154,7 @@ export async function saveDailyAnalysis(analysisResults: AnalysisResults): Promi
 /**
  * Save weekly report to S3
  */
-export async function saveWeeklyReport(reportData: Record<string, unknown>): Promise<StorageResult> {
+export async function saveWeeklyReport(reportData: Readonly<Record<string, unknown>>): Promise<StorageResult> {
   const client = getS3Client();
   const key = getWeeklyKey();
   const timestamp = new Date().toISOString();
@@ -188,7 +189,7 @@ export async function saveWeeklyReport(reportData: Record<string, unknown>): Pro
 /**
  * Get analysis by key
  */
-export async function getAnalysis(key: string): Promise<Record<string, unknown>> {
+export async function getAnalysis(key: string): Promise<Readonly<Record<string, unknown>>> {
   const client = getS3Client();
 
   const command = new GetObjectCommand({
@@ -199,19 +200,18 @@ export async function getAnalysis(key: string): Promise<Record<string, unknown>>
   const response = await client.send(command);
   const bodyString = await response.Body?.transformToString();
 
-  if (!bodyString) {
+  if (bodyString === undefined || bodyString === '') {
     throw new Error('Empty response body');
   }
 
-  return JSON.parse(bodyString);
+  return JSON.parse(bodyString) as Readonly<Record<string, unknown>>;
 }
 
 /**
  * List recent daily analyses
  */
-export async function listRecentAnalyses(days = 7): Promise<AnalysisMetadata[]> {
+export async function listRecentAnalyses(days = 7): Promise<readonly AnalysisMetadata[]> {
   const client = getS3Client();
-  const results: AnalysisMetadata[] = [];
 
   // Calculate date range
   const endDate = new Date();
@@ -226,28 +226,32 @@ export async function listRecentAnalyses(days = 7): Promise<AnalysisMetadata[]> 
 
   const response = await client.send(command);
 
-  if (response.Contents) {
-    for (const item of response.Contents) {
-      if (!item.Key) {
-        continue;
-      }
-      // Extract date from key: daily/YYYY-MM-DD/...
+  const items = (response.Contents ?? [])
+    .filter((item): item is typeof item & { Key: string } => item.Key !== undefined)
+    .map(item => {
       const match = item.Key.match(/daily\/(\d{4}-\d{2}-\d{2})\//);
-      if (match) {
-        const itemDate = new Date(match[1]);
-        if (itemDate >= startDate && itemDate <= endDate) {
-          results.push({
-            key: item.Key,
-            date: match[1],
-            lastModified: item.LastModified,
-            size: item.Size
-          });
-        }
+      if (match === null) {
+        return null;
       }
-    }
-  }
+      const metadata: AnalysisMetadata = {
+        key: item.Key,
+        date: match[1],
+        lastModified: item.LastModified,
+        size: item.Size
+      };
+      return metadata;
+    })
+    .filter((item): item is AnalysisMetadata => item !== null)
+    .filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDate && itemDate <= endDate;
+    });
 
-  return results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const results: readonly AnalysisMetadata[] = [...items].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  return results;
 }
 
 /**

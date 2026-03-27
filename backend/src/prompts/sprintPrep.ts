@@ -2,12 +2,11 @@
  * Sprint Prep Analysis Prompt
  *
  * Story 6 - Sprint Prep Analyzer
- * Owner: [Assign engineer working on Story 6]
  *
  * TODO: Implement prompt for sprint readiness analysis
  */
 
-const SPRINT_PREP_PROMPT = `You are a Sprint Readiness Analyzer.
+export const SPRINT_PREP_PROMPT = `You are a Sprint Readiness Analyzer.
 
 Analyze the upcoming sprint to determine if it's ready to begin.
 
@@ -52,7 +51,3 @@ Return ONLY valid JSON:
   ],
   "summary": "string - human-readable summary for sprint planning meeting"
 }`;
-
-module.exports = {
-  SPRINT_PREP_PROMPT
-};

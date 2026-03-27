@@ -54,11 +54,12 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  workloadAnalysis: {
-    type: Object,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import type { WorkloadAnalysis } from '@/types';
+
+interface Props {
+  workloadAnalysis: WorkloadAnalysis;
+}
+
+defineProps<Props>();
 </script>

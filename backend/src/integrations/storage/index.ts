@@ -14,7 +14,14 @@
  *             └── {timestamp}-report.json
  */
 
-const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  type S3ClientConfig
+} from '@aws-sdk/client-s3';
+import type { SprintHealthAnalysis, QualityResult, ActionItem, StorageResult, StorageHealthCheck } from '../../types/index.js';
 
 // Configuration from environment
 const config = {
@@ -25,11 +32,29 @@ const config = {
   forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true'
 };
 
+interface AnalysisResults {
+  sprintAnalysis?: SprintHealthAnalysis;
+  qualityResults?: QualityResult[];
+  actionItems?: ActionItem[];
+  sprintData?: {
+    sprint?: {
+      name?: string;
+    };
+  };
+}
+
+interface AnalysisMetadata {
+  key: string;
+  date: string;
+  lastModified?: Date;
+  size?: number;
+}
+
 /**
  * Create S3 client configured for either AWS S3 or MinIO
  */
-function createS3Client() {
-  const clientConfig = {
+function createS3Client(): S3Client {
+  const clientConfig: S3ClientConfig = {
     region: config.region
   };
 
@@ -46,12 +71,12 @@ function createS3Client() {
   return new S3Client(clientConfig);
 }
 
-let s3Client = null;
+let s3Client: S3Client | null = null;
 
 /**
  * Get or create S3 client (singleton)
  */
-function getS3Client() {
+function getS3Client(): S3Client {
   if (!s3Client) {
     s3Client = createS3Client();
   }
@@ -60,10 +85,8 @@ function getS3Client() {
 
 /**
  * Generate storage key for daily analysis
- * @param {Date} [date] - Date for the analysis (defaults to now)
- * @returns {string} S3 key path
  */
-function getDailyKey(date = new Date()) {
+export function getDailyKey(date: Date = new Date()): string {
   const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
   const timestamp = date.toISOString().replace(/[:.]/g, '-');
   return `daily/${dateStr}/${timestamp}-analysis.json`;
@@ -71,10 +94,8 @@ function getDailyKey(date = new Date()) {
 
 /**
  * Generate storage key for weekly report
- * @param {Date} [date] - Date for the report (defaults to now)
- * @returns {string} S3 key path
  */
-function getWeeklyKey(date = new Date()) {
+export function getWeeklyKey(date: Date = new Date()): string {
   const year = date.getFullYear();
   const week = getWeekNumber(date);
   const timestamp = date.toISOString().replace(/[:.]/g, '-');
@@ -84,25 +105,18 @@ function getWeeklyKey(date = new Date()) {
 /**
  * Get ISO week number
  */
-function getWeekNumber(date) {
+function getWeekNumber(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 /**
  * Save daily analysis results to S3
- *
- * @param {Object} analysisResults - The full analysis results
- * @param {Object} analysisResults.sprintAnalysis - Sprint health analysis
- * @param {Array} analysisResults.qualityResults - Ticket quality results
- * @param {Array} analysisResults.actionItems - Generated action items
- * @param {Object} analysisResults.sprintData - Sprint metadata
- * @returns {Promise<Object>} Storage result with key and location
  */
-async function saveDailyAnalysis(analysisResults) {
+export async function saveDailyAnalysis(analysisResults: AnalysisResults): Promise<StorageResult> {
   const client = getS3Client();
   const key = getDailyKey();
   const timestamp = new Date().toISOString();
@@ -130,20 +144,16 @@ async function saveDailyAnalysis(analysisResults) {
   console.log(`Saved daily analysis to s3://${config.bucket}/${key}`);
 
   return {
-    bucket: config.bucket,
-    key,
     location: `s3://${config.bucket}/${key}`,
+    key,
     timestamp
   };
 }
 
 /**
  * Save weekly report to S3
- *
- * @param {Object} reportData - Weekly report data
- * @returns {Promise<Object>} Storage result with key and location
  */
-async function saveWeeklyReport(reportData) {
+export async function saveWeeklyReport(reportData: Record<string, unknown>): Promise<StorageResult> {
   const client = getS3Client();
   const key = getWeeklyKey();
   const timestamp = new Date().toISOString();
@@ -169,20 +179,16 @@ async function saveWeeklyReport(reportData) {
   console.log(`Saved weekly report to s3://${config.bucket}/${key}`);
 
   return {
-    bucket: config.bucket,
-    key,
     location: `s3://${config.bucket}/${key}`,
+    key,
     timestamp
   };
 }
 
 /**
  * Get analysis by key
- *
- * @param {string} key - S3 object key
- * @returns {Promise<Object>} Analysis data
  */
-async function getAnalysis(key) {
+export async function getAnalysis(key: string): Promise<Record<string, unknown>> {
   const client = getS3Client();
 
   const command = new GetObjectCommand({
@@ -191,20 +197,21 @@ async function getAnalysis(key) {
   });
 
   const response = await client.send(command);
-  const bodyString = await response.Body.transformToString();
+  const bodyString = await response.Body?.transformToString();
+
+  if (!bodyString) {
+    throw new Error('Empty response body');
+  }
 
   return JSON.parse(bodyString);
 }
 
 /**
  * List recent daily analyses
- *
- * @param {number} [days=7] - Number of days to look back
- * @returns {Promise<Array>} List of analysis metadata
  */
-async function listRecentAnalyses(days = 7) {
+export async function listRecentAnalyses(days = 7): Promise<AnalysisMetadata[]> {
   const client = getS3Client();
-  const results = [];
+  const results: AnalysisMetadata[] = [];
 
   // Calculate date range
   const endDate = new Date();
@@ -221,6 +228,9 @@ async function listRecentAnalyses(days = 7) {
 
   if (response.Contents) {
     for (const item of response.Contents) {
+      if (!item.Key) {
+        continue;
+      }
       // Extract date from key: daily/YYYY-MM-DD/...
       const match = item.Key.match(/daily\/(\d{4}-\d{2}-\d{2})\//);
       if (match) {
@@ -237,15 +247,13 @@ async function listRecentAnalyses(days = 7) {
     }
   }
 
-  return results.sort((a, b) => new Date(b.date) - new Date(a.date));
+  return results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 /**
  * Check if storage is configured and accessible
- *
- * @returns {Promise<Object>} Health check result
  */
-async function healthCheck() {
+export async function healthCheck(): Promise<StorageHealthCheck> {
   try {
     const client = getS3Client();
     const command = new ListObjectsV2Command({
@@ -257,27 +265,13 @@ async function healthCheck() {
 
     return {
       status: 'ok',
-      bucket: config.bucket,
-      endpoint: config.endpoint || 'AWS S3',
-      timestamp: new Date().toISOString()
+      bucket: config.bucket
     };
   } catch (error) {
     return {
       status: 'error',
-      error: error.message,
-      bucket: config.bucket,
-      endpoint: config.endpoint || 'AWS S3'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      bucket: config.bucket
     };
   }
 }
-
-module.exports = {
-  saveDailyAnalysis,
-  saveWeeklyReport,
-  getAnalysis,
-  listRecentAnalyses,
-  healthCheck,
-  // Exposed for testing
-  getDailyKey,
-  getWeeklyKey
-};

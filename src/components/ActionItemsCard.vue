@@ -51,18 +51,22 @@
   </div>
 </template>
 
-<script setup>
-const props = defineProps({
-  actionItems: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
+<script setup lang="ts">
+import type { ActionItem } from '@/types';
+
+interface Props {
+  actionItems: ActionItem[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  actionItems: () => [],
 });
 
-const emit = defineEmits(['update:actionItems']);
+const emit = defineEmits<{
+  'update:actionItems': [items: ActionItem[]];
+}>();
 
-function priorityClass(priority) {
+function priorityClass(priority: 'high' | 'medium' | 'low'): string {
   if (priority === 'high') {
     return 'status-critical';
   }
@@ -72,17 +76,17 @@ function priorityClass(priority) {
   return 'status-healthy';
 }
 
-function markDone(idx) {
+function markDone(idx: number): void {
   const updated = props.actionItems.filter((_, i) => i !== idx);
   emit('update:actionItems', updated);
 }
 
-function dismiss(idx) {
+function dismiss(idx: number): void {
   const updated = props.actionItems.filter((_, i) => i !== idx);
   emit('update:actionItems', updated);
 }
 
-function exportActions() {
+function exportActions(): void {
   const markdown = props.actionItems
     .map((item) => {
       return `## ${item.action}

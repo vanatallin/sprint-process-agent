@@ -43,45 +43,54 @@ Sprints fail for preventable reasons: stale tickets discovered too late, unbalan
 
 ```
 sprint-agent/
-├── src/                          # Vue 3 Frontend
+├── src/                          # Vue 3 Frontend (TypeScript)
 │   ├── views/DashboardView.vue   # Main dashboard with analysis results
 │   ├── components/               # UI components for each analysis type
-│   ├── composables/              # Vue composition functions
-│   ├── services/sprintService.js # API client
-│   └── types/index.js            # TypeScript-style JSDoc types
-├── backend/                      # Lambda Backend
+│   ├── composables/              # Vue composition functions (.ts)
+│   ├── services/sprintService.ts # API client
+│   └── types/index.ts            # TypeScript interfaces
+├── backend/                      # Lambda Backend (TypeScript)
 │   ├── src/
-│   │   ├── index.js              # Main Lambda handler (orchestration)
-│   │   ├── analyzers/            # Claude analysis logic
-│   │   │   └── claudeAnalyzer.js # Sprint health + quality prompts
-│   │   ├── prompts/              # System prompts for Claude
-│   │   │   └── index.js          # SPRINT_ANALYSIS_PROMPT, QUALITY_CHECK_PROMPT
-│   │   └── utils/ssm.js          # AWS SSM parameter retrieval
-│   └── __tests__/                # Jest tests
-├── docs/
-│   ├── api-contract.md           # REST API specification
-│   └── mock-data.json            # Sample data for UI development
-└── CLAUDE.md                     # This file
+│   │   ├── index.ts              # Main Lambda handler (orchestration)
+│   │   ├── types/index.ts        # Backend-specific types
+│   │   ├── analyzers/            # Claude analysis logic (.ts)
+│   │   ├── prompts/              # System prompts for Claude (.ts)
+│   │   └── utils/ssm.ts          # AWS SSM parameter retrieval
+│   └── __tests__/                # Jest tests (.ts)
+├── tsconfig.json                 # Base TypeScript config
+├── tsconfig.app.json             # Frontend TypeScript config
+└── backend/tsconfig.json         # Backend TypeScript config
 ```
 
 ## For Contributors
 
 ### Adding a New Analyzer
 
-1. Create analyzer in `backend/src/analyzers/`
-2. Add system prompt in `backend/src/prompts/index.js`
-3. Register in main handler `backend/src/index.js`
-4. Add corresponding UI component in `src/components/`
-5. Update API contract in `docs/api-contract.md`
-6. Add tests in `backend/__tests__/`
+1. Create analyzer in `backend/src/analyzers/` (TypeScript required)
+2. Add system prompt in `backend/src/prompts/index.ts`
+3. Register in main handler `backend/src/index.ts`
+4. Add types in `backend/src/types/index.ts`
+5. Add corresponding UI component in `src/components/`
+6. Update API contract in `docs/api-contract.md`
+7. Add tests in `backend/__tests__/`
 
 ### Code Standards
 
-- **Frontend**: Vue 3 Composition API, Tailwind CSS
-- **Backend**: Node.js 18, ES modules
-- **Testing**: Vitest (frontend), Jest (backend)
-- **Linting**: ESLint with Vue plugin
+- **Language**: TypeScript (mandatory for all new code)
+- **Frontend**: Vue 3 Composition API with TypeScript, Tailwind CSS
+- **Backend**: Node.js 18, ES modules, TypeScript
+- **Testing**: Vitest (frontend), Jest with ts-jest (backend)
+- **Linting**: ESLint with TypeScript plugin
 - **Commits**: Conventional commits (`feat:`, `fix:`, `docs:`, etc.)
+
+### TypeScript Guidelines
+
+1. **No `any` types** - Use proper types or `unknown` with type guards
+2. **Strict mode enabled** - All strictness checks are on
+3. **Explicit return types** - All functions should have explicit return types
+4. **Interface over type** - Prefer interfaces for object shapes
+5. **Shared types** - Place shared types in `src/types/` (frontend) or `backend/src/types/`
+6. **Import type** - Use `import type` for type-only imports
 
 ### Running Locally
 
@@ -89,10 +98,13 @@ sprint-agent/
 # Frontend
 npm install
 npm run dev
+npm run typecheck  # Verify TypeScript types
 
 # Backend (requires AWS credentials)
 cd backend && npm install
-npm test
+npm run build      # Compile TypeScript
+npm run dev        # Run with tsx
+npm test           # Run tests
 ```
 
 ## Environment Variables
@@ -120,6 +132,7 @@ npm test
 - Slack @mentions require email-to-user-ID lookup
 - Sprint Prep runs on-demand only; Health/Quality run daily
 - Weekly reports append to existing Google Doc (don't overwrite)
+- **All new code must be written in TypeScript**
 
 ## Related Documentation
 

@@ -2,7 +2,6 @@
  * Sprint Agent - Main Lambda Handler
  *
  * Story 7 - Backend Integration
- * Owner: [Assign engineer working on Story 7]
  *
  * Orchestrates the sprint analysis workflow:
  * 1. Fetch sprint data (via MCP) - Story 2
@@ -15,19 +14,42 @@
  */
 
 // Analyzers
-const {
+import {
   analyzeSprintHealth,
   checkAllTicketsQuality,
   generateActionItems
-} = require('./analyzers');
+} from './analyzers/index.js';
 
 // Integrations
-const { jira, googleDocs, storage } = require('./integrations');
+import { jira, googleDocs, storage } from './integrations/index.js';
+
+// Types
+import {
+  NotImplementedError,
+  type LambdaEvent,
+  type LambdaResponse,
+  type SprintHealthAnalysis,
+  type QualityResult,
+  type ActionItem,
+  type StorageResult
+} from './types/index.js';
+
+interface AnalysisResults {
+  sprintAnalysis: SprintHealthAnalysis;
+  qualityResults: QualityResult[];
+  actionItems: ActionItem[];
+  sprintData: {
+    sprint: { name: string; daysRemaining: number };
+    metrics: { totalPoints: number; completedPoints: number; completionPct: number };
+    ticketCount: number;
+  };
+  storage?: StorageResult | null;
+}
 
 /**
  * Main Lambda handler
  */
-exports.handler = async (_event) => {
+export async function handler(_event: LambdaEvent): Promise<LambdaResponse> {
   console.log('Starting sprint analysis...');
 
   try {
@@ -61,7 +83,7 @@ exports.handler = async (_event) => {
 
     // 6. Save results to S3/MinIO
     console.log('Saving analysis results to storage...');
-    const analysisResults = {
+    const analysisResults: AnalysisResults = {
       sprintAnalysis,
       qualityResults,
       actionItems,
@@ -72,13 +94,13 @@ exports.handler = async (_event) => {
       }
     };
 
-    let storageResult = null;
+    let storageResult: StorageResult | null = null;
     try {
       storageResult = await storage.saveDailyAnalysis(analysisResults);
       console.log(`Analysis saved to: ${storageResult.location}`);
     } catch (storageError) {
       // Log but don't fail - storage is not critical for the response
-      console.error('Failed to save to storage:', storageError.message);
+      console.error('Failed to save to storage:', (storageError as Error).message);
     }
 
     // 7. TODO: Post to Slack (Story 11)
@@ -92,14 +114,14 @@ exports.handler = async (_event) => {
     });
   } catch (error) {
     console.error('Error:', error);
-    return buildErrorResponse(error);
+    return buildErrorResponse(error as Error);
   }
-};
+}
 
 /**
  * Build success response with CORS headers
  */
-function buildSuccessResponse(data) {
+function buildSuccessResponse(data: AnalysisResults): LambdaResponse {
   return {
     statusCode: 200,
     headers: {
@@ -116,9 +138,11 @@ function buildSuccessResponse(data) {
 /**
  * Build error response with CORS headers
  */
-function buildErrorResponse(error) {
+function buildErrorResponse(error: Error): LambdaResponse {
+  const statusCode = error instanceof NotImplementedError ? 501 : 500;
+
   return {
-    statusCode: 500,
+    statusCode,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*'

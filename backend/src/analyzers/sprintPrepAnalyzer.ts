@@ -2,7 +2,6 @@
  * Sprint Prep Analyzer
  *
  * Story 6 - Sprint Readiness Analysis
- * Owner: [Assign engineer working on Story 6]
  *
  * Analyzes sprint readiness before sprint starts:
  * - Ticket completeness
@@ -13,22 +12,33 @@
  * TODO: Implement this analyzer
  */
 
-const { sendClaudeMessage } = require('../utils/claudeClient');
-const { SPRINT_PREP_PROMPT } = require('../prompts');
+import { sendClaudeMessage } from '../utils/claudeClient.js';
+import { SPRINT_PREP_PROMPT } from '../prompts/index.js';
+import type { JiraSprintData, SprintReadiness } from '../types/index.js';
+
+interface TeamCapacity {
+  [name: string]: number;
+}
+
+interface SprintPrepData extends JiraSprintData {
+  sprint: JiraSprintData['sprint'] & {
+    startDate?: string;
+    duration?: string;
+  };
+}
 
 /**
  * Analyze sprint readiness
- *
- * @param {Object} sprintData - Upcoming sprint data from Jira MCP
- * @param {string} [refinementDoc] - Refinement document content
- * @param {string} [techDesignDoc] - Tech design document content
- * @param {Object} [teamCapacity] - Team capacity info
- * @returns {Promise<Object>} Sprint readiness analysis
  */
-async function analyzeSprintReadiness(sprintData, refinementDoc = '', techDesignDoc = '', teamCapacity = {}) {
+export async function analyzeSprintReadiness(
+  sprintData: SprintPrepData,
+  refinementDoc = '',
+  techDesignDoc = '',
+  teamCapacity: TeamCapacity = {}
+): Promise<SprintReadiness> {
   const userPrompt = buildSprintPrepPrompt(sprintData, refinementDoc, techDesignDoc, teamCapacity);
 
-  return sendClaudeMessage({
+  return sendClaudeMessage<SprintReadiness>({
     systemPrompt: SPRINT_PREP_PROMPT,
     userPrompt,
     maxTokens: 3000
@@ -37,14 +47,13 @@ async function analyzeSprintReadiness(sprintData, refinementDoc = '', techDesign
 
 /**
  * Build user prompt for sprint prep analysis
- * @param {Object} sprintData - Sprint data
- * @param {string} refinementDoc - Refinement doc content
- * @param {string} techDesignDoc - Tech design doc content
- * @param {Object} teamCapacity - Team capacity info
- * @returns {string} Formatted prompt
  */
-function buildSprintPrepPrompt(sprintData, refinementDoc, techDesignDoc, teamCapacity) {
-  // TODO: Implement prompt building for Story 6
+export function buildSprintPrepPrompt(
+  sprintData: SprintPrepData,
+  refinementDoc: string,
+  techDesignDoc: string,
+  teamCapacity: TeamCapacity
+): string {
   return `Analyze this upcoming sprint for readiness:
 
 SPRINT: ${sprintData.sprint?.name || 'Unknown'}
@@ -71,8 +80,3 @@ ${techDesignDoc || 'No tech design document provided'}
 
 Analyze if this sprint is ready to begin.`;
 }
-
-module.exports = {
-  analyzeSprintReadiness,
-  buildSprintPrepPrompt
-};

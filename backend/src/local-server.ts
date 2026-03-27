@@ -7,10 +7,11 @@
  * Usage: npm run dev (from backend directory)
  */
 
-const express = require('express');
-const cors = require('cors');
-const { handler } = require('./index');
-const { storage } = require('./integrations');
+import express, { type Request, type Response } from 'express';
+import cors from 'cors';
+import { handler } from './index.js';
+import { storage } from './integrations/index.js';
+import type { LambdaEvent, HealthStatus } from './types/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // Health check
-app.get('/health', async (_req, res) => {
+app.get('/health', async (_req: Request, res: Response) => {
   const storageHealth = await storage.healthCheck();
   res.json({
     status: 'ok',
@@ -30,14 +31,14 @@ app.get('/health', async (_req, res) => {
 });
 
 // Main analysis endpoint - wraps Lambda handler
-app.post('/analyze-sprint', async (req, res) => {
+app.post('/analyze-sprint', async (req: Request, res: Response) => {
   try {
     console.log('Received analysis request');
 
     // Create Lambda-like event object
-    const event = {
+    const event: LambdaEvent = {
       body: JSON.stringify(req.body),
-      headers: req.headers,
+      headers: req.headers as Record<string, string | undefined>,
       httpMethod: 'POST',
       path: '/analyze-sprint'
     };
@@ -51,41 +52,41 @@ app.post('/analyze-sprint', async (req, res) => {
     console.error('Error handling request:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: (error as Error).message
     });
   }
 });
 
 // List recent analyses from storage
-app.get('/analyses', async (req, res) => {
+app.get('/analyses', async (req: Request, res: Response) => {
   try {
-    const days = parseInt(req.query.days) || 7;
+    const days = parseInt(req.query.days as string) || 7;
     const analyses = await storage.listRecentAnalyses(days);
     res.json({ success: true, analyses });
   } catch (error) {
     console.error('Error listing analyses:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: (error as Error).message });
   }
 });
 
 // Get specific analysis by key
-app.get('/analyses/:date/:filename', async (req, res) => {
+app.get('/analyses/:date/:filename', async (req: Request, res: Response) => {
   try {
     const key = `daily/${req.params.date}/${req.params.filename}`;
     const analysis = await storage.getAnalysis(key);
     res.json({ success: true, analysis });
   } catch (error) {
     console.error('Error getting analysis:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: (error as Error).message });
   }
 });
 
 // Mock data endpoint for UI development
-app.get('/mock-analysis', (_req, res) => {
+app.get('/mock-analysis', (_req: Request, res: Response) => {
   res.json({
     success: true,
     sprintAnalysis: {
-      sprintHealth: 'at-risk',
+      sprintHealth: 'at-risk' as HealthStatus,
       completionPrediction: {
         likelihood: 'medium',
         reasoning: 'Several tickets are stale and workload is unbalanced',
@@ -124,7 +125,8 @@ app.get('/mock-analysis', (_req, res) => {
           }
         ],
         scopeCreep: [],
-        missingRequirements: []
+        missingRequirements: [],
+        overallAssessment: 'Needs improvement'
       }
     ],
     actionItems: [

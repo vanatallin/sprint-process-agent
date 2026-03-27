@@ -36,11 +36,12 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  staleTickets: {
-    type: Array,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import type { StaleTicket } from '@/types';
+
+interface Props {
+  staleTickets: StaleTicket[];
+}
+
+defineProps<Props>();
 </script>

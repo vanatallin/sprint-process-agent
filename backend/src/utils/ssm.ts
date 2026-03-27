@@ -2,23 +2,21 @@
  * AWS SSM Parameter Store utilities
  */
 
-const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm');
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 
 const ssmClient = new SSMClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 // Cache for parameters
-const parameterCache = new Map();
+const parameterCache = new Map<string, string>();
 
 /**
  * Get parameter from SSM Parameter Store
  * Caches values for the duration of the Lambda execution
- *
- * @param {string} name - Parameter name
- * @returns {Promise<string>} Parameter value
  */
-async function getParameter(name) {
-  if (parameterCache.has(name)) {
-    return parameterCache.get(name);
+export async function getParameter(name: string): Promise<string> {
+  const cachedValue = parameterCache.get(name);
+  if (cachedValue !== undefined) {
+    return cachedValue;
   }
 
   const command = new GetParameterCommand({
@@ -27,7 +25,11 @@ async function getParameter(name) {
   });
 
   const response = await ssmClient.send(command);
-  const value = response.Parameter.Value;
+  const value = response.Parameter?.Value;
+
+  if (!value) {
+    throw new Error(`Parameter ${name} not found or has no value`);
+  }
 
   parameterCache.set(name, value);
   return value;
@@ -37,11 +39,6 @@ async function getParameter(name) {
  * Clear parameter cache
  * Useful for testing
  */
-function clearCache() {
+export function clearCache(): void {
   parameterCache.clear();
 }
-
-module.exports = {
-  getParameter,
-  clearCache
-};

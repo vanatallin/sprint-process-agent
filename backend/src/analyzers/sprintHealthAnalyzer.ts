@@ -2,7 +2,6 @@
  * Sprint Health Analyzer
  *
  * Story 4 - Sprint Health Analysis
- * Owner: [Assign engineer working on Story 4]
  *
  * Analyzes sprint health including:
  * - Stale ticket identification with reasoning
@@ -10,23 +9,17 @@
  * - Workload analysis
  */
 
-const { sendClaudeMessage } = require('../utils/claudeClient');
-const { SPRINT_HEALTH_PROMPT } = require('../prompts');
+import { sendClaudeMessage } from '../utils/claudeClient.js';
+import { SPRINT_HEALTH_PROMPT } from '../prompts/index.js';
+import type { JiraSprintData, SprintHealthAnalysis } from '../types/index.js';
 
 /**
  * Analyze sprint health
- *
- * @param {Object} sprintData - Sprint data from Jira MCP
- * @param {Object} sprintData.sprint - Sprint info (name, daysRemaining)
- * @param {Object} sprintData.metrics - Sprint metrics (totalPoints, completedPoints, completionPct)
- * @param {Array} sprintData.workload - Team workload [{name, points, tickets}]
- * @param {Array} sprintData.tickets - Ticket details [{key, summary, status, storyPoints, assignee, daysSinceUpdate, comments}]
- * @returns {Promise<Object>} Sprint health analysis
  */
-async function analyzeSprintHealth(sprintData) {
+export async function analyzeSprintHealth(sprintData: JiraSprintData): Promise<SprintHealthAnalysis> {
   const userPrompt = buildSprintHealthPrompt(sprintData);
 
-  return sendClaudeMessage({
+  return sendClaudeMessage<SprintHealthAnalysis>({
     systemPrompt: SPRINT_HEALTH_PROMPT,
     userPrompt,
     maxTokens: 3000
@@ -35,10 +28,8 @@ async function analyzeSprintHealth(sprintData) {
 
 /**
  * Build user prompt for sprint health analysis
- * @param {Object} sprintData - Sprint data
- * @returns {string} Formatted prompt
  */
-function buildSprintHealthPrompt(sprintData) {
+export function buildSprintHealthPrompt(sprintData: JiraSprintData): string {
   return `Analyze this sprint:
 
 SPRINT: ${sprintData.sprint.name}
@@ -64,8 +55,3 @@ ${t.comments.map(c => `  - ${c.author}: ${c.body}`).join('\n')}
 
 Provide comprehensive analysis.`;
 }
-
-module.exports = {
-  analyzeSprintHealth,
-  buildSprintHealthPrompt
-};

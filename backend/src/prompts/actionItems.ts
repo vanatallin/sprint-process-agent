@@ -2,10 +2,9 @@
  * Action Items Generation Prompt
  *
  * Story 7 - Backend Integration
- * Owner: [Assign engineer working on Story 7]
  */
 
-const ACTION_ITEMS_PROMPT = `You are a Sprint Retrospective Assistant.
+export const ACTION_ITEMS_PROMPT = `You are a Sprint Retrospective Assistant.
 
 Based on the sprint analysis and quality issues, generate actionable items for the next sprint.
 
@@ -28,7 +27,3 @@ Return ONLY valid JSON:
     }
   ]
 }`;
-
-module.exports = {
-  ACTION_ITEMS_PROMPT
-};

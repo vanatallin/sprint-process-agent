@@ -2,10 +2,9 @@
  * Ticket Quality Check Prompt
  *
  * Story 5 - Ticket Quality Checker
- * Owner: [Assign engineer working on Story 5]
  */
 
-const TICKET_QUALITY_PROMPT = `You are a Ticket Quality Analyzer.
+export const TICKET_QUALITY_PROMPT = `You are a Ticket Quality Analyzer.
 
 Check if this ticket has:
 1. Clear, detailed description
@@ -44,7 +43,3 @@ Return ONLY valid JSON:
   ],
   "overallAssessment": "string - summary of ticket quality"
 }`;
-
-module.exports = {
-  TICKET_QUALITY_PROMPT
-};

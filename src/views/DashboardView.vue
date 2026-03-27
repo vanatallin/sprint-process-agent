@@ -72,7 +72,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useSprintAnalysis } from '@/composables/useSprintAnalysis';
 import SprintHealthCard from '@/components/SprintHealthCard.vue';
 import StaleTicketsCard from '@/components/StaleTicketsCard.vue';

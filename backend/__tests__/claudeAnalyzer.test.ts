@@ -5,21 +5,24 @@
  * Story 4 & 5 - Unit tests for analyzer logic
  */
 
-require('../src/analyzers');
+import { jest, describe, it, expect } from '@jest/globals';
+
+// Import the analyzers after mocks are set up
+// Note: Dynamic import would be needed for actual mock testing
 
 // Mock the SSM client
-jest.mock('../src/utils/ssm', () => ({
-  getParameter: jest.fn().mockResolvedValue('mock-api-key')
+jest.unstable_mockModule('../src/utils/ssm.js', () => ({
+  getParameter: jest.fn<() => Promise<string>>().mockResolvedValue('mock-api-key')
 }));
 
 // Mock the Anthropic client
-jest.mock('@anthropic-ai/sdk', () => {
-  return jest.fn().mockImplementation(() => ({
+jest.unstable_mockModule('@anthropic-ai/sdk', () => ({
+  default: jest.fn().mockImplementation(() => ({
     messages: {
       create: jest.fn()
     }
-  }));
-});
+  }))
+}));
 
 describe('claudeAnalyzer', () => {
   describe('analyzeSprintHealth', () => {

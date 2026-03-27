@@ -62,15 +62,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
+import type { QualityResult, QualityLevel } from '@/types';
 
-const props = defineProps({
-  qualityResults: {
-    type: Array,
-    required: true,
-  },
-});
+interface Props {
+  qualityResults: QualityResult[];
+}
+
+const props = defineProps<Props>();
 
 const lowQualityTickets = computed(() => {
   return props.qualityResults.filter(
@@ -78,7 +78,7 @@ const lowQualityTickets = computed(() => {
   );
 });
 
-function qualityBadgeClass(quality) {
+function qualityBadgeClass(quality: QualityLevel): string {
   if (quality === 'high') {
     return 'status-healthy';
   }
@@ -88,7 +88,7 @@ function qualityBadgeClass(quality) {
   return 'status-critical';
 }
 
-function severityDot(severity) {
+function severityDot(severity: 'high' | 'medium' | 'low'): string {
   const base = 'w-2 h-2 rounded-full mt-1.5 flex-shrink-0';
   if (severity === 'high') {
     return `${base} bg-red-500`;

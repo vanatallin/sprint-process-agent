@@ -65,19 +65,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
+import type { SprintAnalysis, SprintData } from '@/types';
 
-const props = defineProps({
-  sprintAnalysis: {
-    type: Object,
-    required: true,
-  },
-  sprintData: {
-    type: Object,
-    required: true,
-  },
-});
+interface Props {
+  sprintAnalysis: SprintAnalysis;
+  sprintData: SprintData;
+}
+
+const props = defineProps<Props>();
 
 const statusClass = computed(() => {
   const health = props.sprintAnalysis.sprintHealth;

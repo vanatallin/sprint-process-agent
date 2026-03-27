@@ -2,27 +2,30 @@
  * Action Items Analyzer
  *
  * Story 7 - Backend Integration
- * Owner: [Assign engineer working on Story 7]
  *
  * Generates action items based on:
  * - Sprint health analysis
  * - Ticket quality results
  */
 
-const { sendClaudeMessage } = require('../utils/claudeClient');
-const { ACTION_ITEMS_PROMPT } = require('../prompts');
+import { sendClaudeMessage } from '../utils/claudeClient.js';
+import { ACTION_ITEMS_PROMPT } from '../prompts/index.js';
+import type { SprintHealthAnalysis, QualityResult, ActionItem } from '../types/index.js';
+
+interface ActionItemsResponse {
+  actionItems: ActionItem[];
+}
 
 /**
  * Generate action items for next sprint
- *
- * @param {Object} sprintAnalysis - Sprint health analysis results
- * @param {Array<Object>} qualityResults - Ticket quality check results
- * @returns {Promise<Array<Object>>} Array of action items
  */
-async function generateActionItems(sprintAnalysis, qualityResults) {
+export async function generateActionItems(
+  sprintAnalysis: SprintHealthAnalysis,
+  qualityResults: QualityResult[]
+): Promise<ActionItem[]> {
   const userPrompt = buildActionItemsPrompt(sprintAnalysis, qualityResults);
 
-  const result = await sendClaudeMessage({
+  const result = await sendClaudeMessage<ActionItemsResponse>({
     systemPrompt: ACTION_ITEMS_PROMPT,
     userPrompt,
     maxTokens: 2000
@@ -33,11 +36,11 @@ async function generateActionItems(sprintAnalysis, qualityResults) {
 
 /**
  * Build user prompt for action items generation
- * @param {Object} sprintAnalysis - Sprint analysis results
- * @param {Array<Object>} qualityResults - Quality check results
- * @returns {string} Formatted prompt
  */
-function buildActionItemsPrompt(sprintAnalysis, qualityResults) {
+export function buildActionItemsPrompt(
+  sprintAnalysis: SprintHealthAnalysis,
+  qualityResults: QualityResult[]
+): string {
   const lowQualityTickets = qualityResults.filter(
     r => r.quality === 'low' || r.quality === 'medium'
   );
@@ -60,8 +63,3 @@ KEY INSIGHTS: ${sprintAnalysis.insights || 'No insights available'}
 
 Generate specific, actionable items for improving the next sprint.`;
 }
-
-module.exports = {
-  generateActionItems,
-  buildActionItemsPrompt
-};

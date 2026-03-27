@@ -17,6 +17,6 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // App-level setup
 </script>

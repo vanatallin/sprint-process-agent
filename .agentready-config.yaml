@@ -5,14 +5,11 @@
 project:
   name: sprint-agent
   description: AI-powered sprint analysis tool using Claude
-  language: javascript
+  language: typescript
   framework: vue
 
 # Exclude certain assessors that don't apply to this project
 exclude:
-  # We use JavaScript with JSDoc, not TypeScript
-  # - type_annotations  # Keep enabled - we use JSDoc types
-
   # Python-specific assessors
   - python_packaging
   - requirements_txt
@@ -41,9 +38,9 @@ testing:
   framework: vitest,jest
   coverage_threshold: 70
   test_file_patterns:
-    - "**/*.test.js"
-    - "**/*.spec.js"
-    - "**/__tests__/**/*.js"
+    - "**/*.test.ts"
+    - "**/*.spec.ts"
+    - "**/__tests__/**/*.ts"
 
 # Documentation requirements
 documentation:

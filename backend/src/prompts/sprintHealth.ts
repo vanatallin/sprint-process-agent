@@ -2,10 +2,9 @@
  * Sprint Health Analysis Prompt
  *
  * Story 4 - Sprint Health Analyzer
- * Owner: [Assign engineer working on Story 4]
  */
 
-const SPRINT_HEALTH_PROMPT = `You are a Sprint Health Analyzer for agile software teams.
+export const SPRINT_HEALTH_PROMPT = `You are a Sprint Health Analyzer for agile software teams.
 
 Analyze the sprint data and identify:
 1. Stale tickets (not updated at expected pace based on days remaining and ticket complexity)
@@ -48,7 +47,3 @@ Return ONLY valid JSON (no markdown, no explanations outside JSON):
   },
   "insights": "string - overall sprint health insights"
 }`;
-
-module.exports = {
-  SPRINT_HEALTH_PROMPT
-};

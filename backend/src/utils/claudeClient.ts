@@ -5,16 +5,16 @@
  * Handles authentication and response parsing.
  */
 
-const Anthropic = require('@anthropic-ai/sdk');
-const { getParameter } = require('./ssm');
+import Anthropic from '@anthropic-ai/sdk';
+import { getParameter } from './ssm.js';
+import type { ClaudeMessageOptions, ClaudeResponse } from '../types/index.js';
 
-let anthropic = null;
+let anthropic: Anthropic | null = null;
 
 /**
  * Get or create Claude client (singleton)
- * @returns {Promise<Anthropic>} Anthropic client instance
  */
-async function getClaudeClient() {
+export async function getClaudeClient(): Promise<Anthropic> {
   if (anthropic) {
     return anthropic;
   }
@@ -26,19 +26,17 @@ async function getClaudeClient() {
 
 /**
  * Parse Claude response and extract JSON
- * @param {Object} response - Claude API response
- * @returns {Object} Parsed JSON object
  */
-function parseClaudeResponse(response) {
+export function parseClaudeResponse<T>(response: ClaudeResponse): T {
   const text = response.content[0].text;
 
   try {
-    return JSON.parse(text);
-  } catch (e) {
+    return JSON.parse(text) as T;
+  } catch {
     // Try to extract JSON from markdown code blocks
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[1].trim());
+      return JSON.parse(jsonMatch[1].trim()) as T;
     }
 
     console.error('Failed to parse Claude response:', text);
@@ -48,13 +46,12 @@ function parseClaudeResponse(response) {
 
 /**
  * Send a message to Claude and get parsed JSON response
- * @param {Object} options - Request options
- * @param {string} options.systemPrompt - System prompt
- * @param {string} options.userPrompt - User prompt
- * @param {number} [options.maxTokens=2500] - Max tokens for response
- * @returns {Promise<Object>} Parsed JSON response
  */
-async function sendClaudeMessage({ systemPrompt, userPrompt, maxTokens = 2500 }) {
+export async function sendClaudeMessage<T>({
+  systemPrompt,
+  userPrompt,
+  maxTokens = 2500
+}: ClaudeMessageOptions): Promise<T> {
   const client = await getClaudeClient();
 
   const response = await client.messages.create({
@@ -64,11 +61,5 @@ async function sendClaudeMessage({ systemPrompt, userPrompt, maxTokens = 2500 })
     messages: [{ role: 'user', content: userPrompt }]
   });
 
-  return parseClaudeResponse(response);
+  return parseClaudeResponse<T>(response as ClaudeResponse);
 }
-
-module.exports = {
-  getClaudeClient,
-  parseClaudeResponse,
-  sendClaudeMessage
-};

@@ -3,14 +3,15 @@
  * Handles API calls to the backend for sprint analysis
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import type { AnalysisResponse, HealthStatus } from '@/types';
+
+const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const sprintService = {
   /**
    * Run full sprint analysis
-   * @returns {Promise<Object>} Analysis results
    */
-  async analyzeCurrentSprint() {
+  async analyzeCurrentSprint(): Promise<AnalysisResponse> {
     const response = await fetch(`${API_URL}/analyze-sprint`, {
       method: 'POST',
       headers: {
@@ -19,18 +20,19 @@ export const sprintService = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = (await response.json().catch(() => ({}))) as { error?: string };
       throw new Error(errorData.error || `Analysis failed: ${response.status}`);
     }
 
-    return response.json();
+    return response.json() as Promise<AnalysisResponse>;
   },
 };
 
 // Mock data for development - remove when backend is ready
-export const mockAnalysisResults = {
+export const mockAnalysisResults: AnalysisResponse = {
+  success: true,
   sprintAnalysis: {
-    sprintHealth: 'at-risk',
+    sprintHealth: 'at-risk' as HealthStatus,
     completionPrediction: {
       likelihood: 'medium',
       reasoning:
@@ -94,6 +96,7 @@ export const mockAnalysisResults = {
           recommendation: 'Add error handling requirements from tech design section 3.2',
         },
       ],
+      overallAssessment: 'Ticket needs improvement before development begins',
     },
   ],
   actionItems: [
@@ -110,6 +113,8 @@ export const mockAnalysisResults = {
     sprint: {
       id: 123,
       name: 'Sprint 42',
+      startDate: '2024-01-01',
+      endDate: '2024-01-14',
       daysRemaining: 5,
     },
     metrics: {
@@ -117,5 +122,6 @@ export const mockAnalysisResults = {
       completedPoints: 21,
       completionPct: 38.2,
     },
+    ticketCount: 12,
   },
 };
